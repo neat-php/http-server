@@ -1,0 +1,46 @@
+{
+    "name": "neat/http-server",
+    "description": "Neat HTTP server components",
+    "type": "library",
+    "keywords": [
+        "psr-17",
+        "neat",
+        "http",
+        "server",
+        "handler",
+        "middleware"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Guido van Biemen",
+            "email": "guidovanbiemen@gmail.com"
+        },
+        {
+            "name": "Bauke van der Woude",
+            "email": "bvanderwoude@shopbox.nl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Neat\\Http\\Server\\": "classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Neat\\Http\\Server\\Test\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=7.0",
+        "neat/http": "^0.5.1",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.0",
+        "psr/http-server-handler": "^1.0",
+        "psr/http-server-middleware": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0",
+        "nyholm/psr7": "^1.2"
+    }
+}

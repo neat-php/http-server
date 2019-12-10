@@ -39,8 +39,11 @@ class Dispatcher implements Handler
     private function stack(Handler $handler, array $middleware): Handler
     {
         if ($middleware) {
-            return new CallableHandler(function (Request $request) use ($handler, $middleware): Response {
-                return array_shift($middleware)->process($request, $this->stack($handler, $middleware));
+            $layer = array_shift($middleware);
+            $stack = $this->stack($handler, $middleware);
+
+            return new CallableHandler(function (Request $request) use ($layer, $stack): Response {
+                return $layer->process($request, $stack);
             });
         }
 

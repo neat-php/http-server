@@ -2,8 +2,11 @@
 
 namespace Neat\Http\Server\Test\Handler;
 
+use Neat\Http\Request;
+use Neat\Http\Response;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Handler\CallableHandler;
+use Neat\Http\Server\Test\CallableMock;
 use PHPUnit\Framework\TestCase;
 
 class CallableHandlerTest extends TestCase
@@ -19,9 +22,17 @@ class CallableHandlerTest extends TestCase
 
     public function testHandle()
     {
-        $handler = new CallableHandler($callable = function () {
-        });
+        $request  = $this->createMock(Request::class);
+        $response = $this->createMock(Response::class);
+        $callable = $this->createMock(CallableMock::class);
+        $callable
+            ->expects($this->once())
+            ->method('__invoke')
+            ->with($request)
+            ->willReturn($response);
 
-        // TODO TEST HANDLE
+        $handler = new CallableHandler($callable);
+
+        $this->assertSame($response, $handler->handle($request));
     }
 }

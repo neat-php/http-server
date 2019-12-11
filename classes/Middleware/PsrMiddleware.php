@@ -38,8 +38,11 @@ class PsrMiddleware implements Middleware
      */
     public function process(Request $request, Handler $handler): Response
     {
-        $response = $this->middleware->process($request->psr(), $handler->psr());
+        $psrHandler
+            = $handler instanceof Handler\PsrHandler
+            ? $handler->psr()
+            : new Handler\PsrWrapper($handler);
 
-        return new Response($response);
+        return new Response($this->middleware->process($request->psr(), $psrHandler));
     }
 }

@@ -21,21 +21,33 @@ class Server
     /** @var UploadedFileFactoryInterface */
     private $uploadedFileFactory;
 
+    /** @var callable */
+    private $headerReceiver;
+
+    /** @var callable */
+    private $headerTransmitter;
+
     /**
      * Server constructor
      *
      * @param ServerRequestFactoryInterface $serverRequestFactory
      * @param StreamFactoryInterface        $streamFactory
      * @param UploadedFileFactoryInterface  $uploadedFileFactory
+     * @param callable|null                 $headerReceiver
+     * @param callable|null                 $headerTransmitter
      */
     public function __construct(
         ServerRequestFactoryInterface $serverRequestFactory,
         StreamFactoryInterface $streamFactory,
-        UploadedFileFactoryInterface $uploadedFileFactory
+        UploadedFileFactoryInterface $uploadedFileFactory,
+        callable $headerReceiver = null,
+        callable $headerTransmitter = null
     ) {
         $this->serverRequestFactory = $serverRequestFactory;
         $this->streamFactory        = $streamFactory;
         $this->uploadedFileFactory  = $uploadedFileFactory;
+        $this->headerReceiver       = $headerReceiver ?? 'getallheaders';
+        $this->headerTransmitter    = $headerTransmitter ?? 'header';
     }
 
     /**
@@ -72,6 +84,14 @@ class Server
     }
 
     /**
+     * @return array
+     */
+    public function receiveHeaders(): array
+    {
+        return ($this->headerReceiver)();
+    }
+
+    /**
      * @return StreamInterface
      */
     public function receiveBody(): StreamInterface
@@ -100,7 +120,7 @@ class Server
             ->withBody($this->receiveBody())
             ->withUploadedFiles($this->receiveUploadedFiles($_FILES));
 
-        foreach (getallheaders() as $name => $value) {
+        foreach ($this->receiveHeaders() as $name => $value) {
             $serverRequest = $serverRequest->withHeader($name, $value);
         }
 
@@ -112,12 +132,20 @@ class Server
      */
     public function send(Response $response)
     {
-        header($response->statusLine());
+        $this->sendHeader($response->statusLine());
         foreach ($response->headers() as $header) {
-            header($header->line());
+            $this->sendHeader($header->line());
         }
 
         $this->sendBody($response->bodyStream());
+    }
+
+    /**
+     * @param string $line
+     */
+    public function sendHeader(string $line)
+    {
+        ($this->headerTransmitter)($line);
     }
 
     /**

@@ -2,9 +2,13 @@
 
 namespace Neat\Http\Server\Test;
 
+use Neat\Http\Header;
+use Neat\Http\Request;
+use Neat\Http\Response;
 use Neat\Http\Server\Server;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
@@ -12,12 +16,10 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class ServerTest extends TestCase
 {
-    const SUPERGLOBALS = ['_SERVER', '_GET', '_POST', '_COOKIE', '_FILES'];
-
     /**
-     * Test capturing uploaded files from an empty set
+     * Test receiving uploaded files from an empty set
      */
-    public function testCaptureEmpty()
+    public function testReceiveEmptyFiles()
     {
         $server = new Server(
             $this->createMock(ServerRequestFactoryInterface::class),
@@ -30,9 +32,9 @@ class ServerTest extends TestCase
     }
 
     /**
-     * Test capturing a simple uploaded files
+     * Test receiving a single uploaded file
      */
-    public function testReceiveUploadedFile()
+    public function testReceiveSingleFile()
     {
         $server = new Server(
             $this->createMock(ServerRequestFactoryInterface::class),
@@ -60,9 +62,9 @@ class ServerTest extends TestCase
     }
 
     /**
-     * Test capturing uploaded files from a multi dimensional files array
+     * Test receiving uploaded files from a multi dimensional files array
      */
-    public function testCaptureMultiDimensional()
+    public function testReceiveMultiDimensionalFiles()
     {
         $server = new Server(
             $this->createMock(ServerRequestFactoryInterface::class),
@@ -82,10 +84,10 @@ class ServerTest extends TestCase
                     'details' => [
                         'avatar' => [
                             'tmp_name' => __DIR__ . '/test.txt',
-                            'name' => 'my-avatar.png',
-                            'size' => 90996,
-                            'type' => 'image/png',
-                            'error' => 0,
+                            'name'     => 'my-avatar.png',
+                            'size'     => 90996,
+                            'type'     => 'image/png',
+                            'error'    => 0,
                         ],
                     ],
                 ],
@@ -94,7 +96,7 @@ class ServerTest extends TestCase
     }
 
     /**
-     * Test capturing multiple uploaded files from a non-normalized files array
+     * Test receiving multiple uploaded files from a non-normalized files array
      */
     public function testReceiveNormalized()
     {
@@ -106,8 +108,8 @@ class ServerTest extends TestCase
 
         $stream1 = $this->createMock(StreamInterface::class);
         $stream2 = $this->createMock(StreamInterface::class);
-        $file1 = $this->createMock(UploadedFileInterface::class);
-        $file2 = $this->createMock(UploadedFileInterface::class);
+        $file1   = $this->createMock(UploadedFileInterface::class);
+        $file2   = $this->createMock(UploadedFileInterface::class);
 
         $streamFactory->expects($this->at(0))->method('createStreamFromFile')->with(__DIR__ . '/test1.txt')->willReturn($stream1);
         $streamFactory->expects($this->at(1))->method('createStreamFromFile')->with(__DIR__ . '/test2.txt')->willReturn($stream2);
@@ -122,19 +124,19 @@ class ServerTest extends TestCase
                             0 => __DIR__ . '/test1.txt',
                             1 => __DIR__ . '/test2.txt',
                         ],
-                        'name' => [
+                        'name'     => [
                             0 => 'test1.txt',
                             1 => 'test2.txt',
                         ],
-                        'size' => [
+                        'size'     => [
                             0 => 123,
                             1 => 123,
                         ],
-                        'type' => [
+                        'type'     => [
                             0 => 'text/plain',
                             1 => 'text/plain',
                         ],
-                        'error' => [
+                        'error'    => [
                             0 => 0,
                             1 => 0,
                         ],
@@ -145,9 +147,9 @@ class ServerTest extends TestCase
     }
 
     /**
-     * Test capturing uploaded files from an invalid files array
+     * Test receiving uploaded files from an invalid files array
      */
-    public function testReceiveInvalid()
+    public function testReceiveInvalidFile()
     {
         $server = new Server(
             $this->createMock(ServerRequestFactoryInterface::class),
@@ -176,34 +178,213 @@ class ServerTest extends TestCase
         $this->assertSame($stream, $server->receiveBody());
     }
 
-    public function withSuperGlobals($globals, callable $closure)
+    /**
+     * Test receive
+     *
+     * @backupGlobals enabled
+     */
+    public function testReceiveGetRequest()
     {
-        try {
-            $backup = compact(self::SUPERGLOBALS);
-            extract(array_intersect_key($globals, array_flip(self::SUPERGLOBALS)));
-            $closure();
-        } finally {
-            extract($backup);
-        }
+        $_SERVER = ['HTTP_HOST' => 'localhost', 'REQUEST_URI' => '/'];
+        $_GET    = [];
+        $_POST   = [];
+        $_COOKIE = [];
+        $_FILES  = [];
+
+        $getAllHeadersMock = $this->createMock(CallableMock::class);
+        $getAllHeadersMock->expects($this->once())->method('__invoke')->willReturn([]);
+
+        $server = new Server(
+            $serverRequestFactory = $this->createMock(ServerRequestFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class),
+            $getAllHeadersMock
+        );
+
+        $stream = $this->createMock(StreamInterface::class);
+        $streamFactory->expects($this->once())->method('createStreamFromResource')->with($this->isType('resource'))->willReturn($stream);
+
+        $psrRequest = $this->createMock(ServerRequestInterface::class);
+        $psrRequest->expects($this->once())->method('withProtocolVersion')->with('1.1')->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withCookieParams')->with([])->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withQueryParams')->with([])->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withParsedBody')->with([])->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withUploadedFiles')->with([])->willReturnSelf();
+
+        $serverRequestFactory->expects($this->once())->method('createServerRequest')->with('GET', 'http://localhost/', $_SERVER)->willReturn($psrRequest);
+
+        $request = $server->receive();
+
+        $this->assertInstanceOf(Request::class, $request);
+        $this->assertSame($psrRequest, $request->psr());
     }
 
-    public function testReceive()
+    /**
+     * Test receive
+     *
+     * @backupGlobals enabled
+     */
+    public function testReceivePostRequest()
     {
-        $globals = [
-            '_SERVER' => ['HTTP_HOST' => 'localhost', 'REQUEST_URI' => '/'],
+        $_SERVER = [
+            'HTTPS'           => 'on',
+            'HTTP_HOST'       => 'example.com',
+            'REQUEST_METHOD'  => 'POST',
+            'REQUEST_URI'     => '/test?query=query-value',
+            'SERVER_PROTOCOL' => 'HTTP/1.0',
+        ];
+        $_GET    = ['query' => 'query-value'];
+        $_POST   = ['body' => 'body-value'];
+        $_COOKIE = ['cookie' => 'cookie-value'];
+        $_FILES  = [
+            'avatar' => [
+                'tmp_name' => __DIR__ . '/test.txt',
+                'name'     => 'my-avatar.png',
+                'size'     => 90996,
+                'type'     => 'image/png',
+                'error'    => 0,
+            ],
         ];
 
-        $this->withSuperGlobals($globals, function () {
-            $server = new Server(
-                $this->createMock(ServerRequestFactoryInterface::class),
-                $streamFactory = $this->createMock(StreamFactoryInterface::class),
-                $this->createMock(UploadedFileFactoryInterface::class)
-            );
+        $getAllHeadersMock = $this->createMock(CallableMock::class);
+        $getAllHeadersMock->expects($this->once())->method('__invoke')->willReturn(['Content-Type' => 'application/json; charset=utf8']);
 
-            $stream = $this->createMock(StreamInterface::class);
-            $streamFactory->expects($this->once())->method('createStreamFromResource')->with($this->isType('resource'))->willReturn($stream);
+        $server = new Server(
+            $serverRequestFactory = $this->createMock(ServerRequestFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class),
+            $uploadedFileFactory = $this->createMock(UploadedFileFactoryInterface::class),
+            $getAllHeadersMock
+        );
 
-            $this->assertSame($stream, $server->receiveBody());
-        });
+        $stream = $this->createMock(StreamInterface::class);
+        $avatar = $this->createMock(UploadedFileInterface::class);
+
+        $streamFactory->expects($this->once())->method('createStreamFromFile')->with(__DIR__ . '/test.txt')->willReturn($stream);
+        $uploadedFileFactory->expects($this->once())->method('createUploadedFile')->with($stream, 90996, 0, 'my-avatar.png', 'image/png')->willReturn($avatar);
+
+        $stream = $this->createMock(StreamInterface::class);
+        $streamFactory->expects($this->once())->method('createStreamFromResource')->with($this->isType('resource'))->willReturn($stream);
+
+        $psrRequest = $this->createMock(ServerRequestInterface::class);
+        $psrRequest->expects($this->once())->method('withProtocolVersion')->with('1.0')->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withCookieParams')->with($_COOKIE)->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withQueryParams')->with($_GET)->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withParsedBody')->with($_POST)->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withUploadedFiles')->with(['avatar' => $avatar])->willReturnSelf();
+        $psrRequest->expects($this->once())->method('withHeader')->with('Content-Type', 'application/json; charset=utf8')->willReturnSelf();
+
+        $serverRequestFactory->expects($this->once())->method('createServerRequest')->with('POST', 'https://example.com/test?query=query-value', $_SERVER)->willReturn($psrRequest);
+
+        $request = $server->receive();
+
+        $this->assertInstanceOf(Request::class, $request);
+        $this->assertSame($psrRequest, $request->psr());
+    }
+
+    public function testSendBody()
+    {
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())->method('isSeekable')->willReturn(true);
+        $body->expects($this->once())->method('rewind');
+        $body->expects($this->once())->method('isReadable')->willReturn(true);
+        $body->expects($this->exactly(2))->method('eof')->willReturnOnConsecutiveCalls(false, true);
+        $body->expects($this->once())->method('read')->with(1024)->willReturn('testing');
+
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        ob_start();
+        $server->sendBody($body);
+        $this->assertSame('testing', ob_get_clean());
+    }
+
+    public function testSendUnreadableBody()
+    {
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())->method('isSeekable')->willReturn(true);
+        $body->expects($this->once())->method('rewind');
+        $body->expects($this->once())->method('isReadable')->willReturn(false);
+        $body->expects($this->once())->method('__toString')->willReturn('testing');
+
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        ob_start();
+        $server->sendBody($body);
+        $this->assertSame('testing', ob_get_clean());
+    }
+
+    public function testSendNotSeekableUnreadableBody()
+    {
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())->method('isSeekable')->willReturn(false);
+        $body->expects($this->once())->method('isReadable')->willReturn(false);
+        $body->expects($this->once())->method('__toString')->willReturn('testing');
+
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        ob_start();
+        $server->sendBody($body);
+        $this->assertSame('testing', ob_get_clean());
+    }
+
+    public function testSendHeader()
+    {
+        $transmitter = $this->createMock(CallableMock::class);
+        $transmitter->expects($this->once())->method('__invoke')->with('X-Test: value');
+
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class),
+            null,
+            $transmitter
+        );
+
+        $server->sendHeader('X-Test: value');
+    }
+
+    public function testSendResponse()
+    {
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())->method('isSeekable')->willReturn(false);
+        $body->expects($this->once())->method('isReadable')->willReturn(false);
+        $body->expects($this->once())->method('__toString')->willReturn('Hello world!');
+
+        $header = $this->createMock(Header::class);
+        $header->expects($this->once())->method('line')->willReturn('Content-Type: text/html');
+
+        $response = $this->createMock(Response::class);
+        $response->expects($this->once())->method('statusLine')->willReturn('HTTP/1.1 200 OK');
+        $response->expects($this->once())->method('headers')->willReturn([$header]);
+        $response->expects($this->once())->method('bodyStream')->willReturn($body);
+
+        $transmitter = $this->createMock(CallableMock::class);
+        $transmitter->expects($this->at(0))->method('__invoke')->with('HTTP/1.1 200 OK');
+        $transmitter->expects($this->at(1))->method('__invoke')->with('Content-Type: text/html');
+
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class),
+            null,
+            $transmitter
+        );
+
+        ob_start();
+        $server->send($response);
+        $this->assertSame('Hello world!', ob_get_clean());
     }
 }

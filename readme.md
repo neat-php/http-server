@@ -161,6 +161,15 @@ $response = $output->json(['key' => 'value']);
 // Redirect
 //$response = $output->redirect('/go/there/instead');
 
+// Redirect back
+//$response = $output->redirectBack($request);
+
+// Refresh
+//$response = $output->refresh($request);
+
+// Retry input
+//$response = $output->retry($input);
+
 // Other types of responses
 //$response = $output->response(404, "These aren't the pages you're looking for.");
 ```

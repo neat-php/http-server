@@ -99,7 +99,7 @@ class Output
      * @param string $text
      * @return Response
      */
-    public function text(string $text)
+    public function text(string $text): Response
     {
         return $this->response()
             ->withContentType('text/plain')
@@ -109,7 +109,7 @@ class Output
     /**
      * @return Response
      */
-    public function response()
+    public function response(): Response
     {
         return new Response($this->responseFactory->createResponse());
     }

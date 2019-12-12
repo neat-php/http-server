@@ -24,8 +24,8 @@ Server
 ```php
 <?php
 
-// Create a PSR-17 factory (for example using nyholm/psr7)
-$factory = new Nyholm\Psr7\Factory\Psr17Factory();
+// Create a PSR-17 factory
+$factory = new Example\Factory();
 
 // Then create the server using this factory (three interfaces are required)
 $server = new Neat\Http\Server\Server($factory, $factory, $factory);
@@ -101,16 +101,17 @@ $handler = new Neat\Http\Server\Middleware\CallableMiddleware(
 function (Neat\Http\Request $request, Neat\Http\Server\Handler $handler) {
     return $handler->handle($request);
 });
-
 ```
 
 Dispatcher
 ----------
-To use t
+To use your middleware when handling the request, you can use the Dispatcher.
 
 ```php
 <?php
 
+// Assuming we have a handler readily available, we can create a Dispatcher
+// with a stack of one or more Middleware instances
 /** @var Neat\Http\Server\Handler $handler */
 $dispatcher = new Neat\Http\Server\Dispatcher(
     $handler,
@@ -118,34 +119,83 @@ $dispatcher = new Neat\Http\Server\Dispatcher(
     new Neat\Http\Server\Middleware\CallableMiddleware(function () { /* ... */ })
 );
 
+// Then using the request we can ask the dispatcher to handle the request and
+// return the response from the handler through the middleware.
 /** @var Neat\Http\Request $request */
 $response = $dispatcher->handle($request);
 ```
 
-Responding
-----------
-Building responses with Neat HTTP components is real easy:
+Output
+------
+Creating responses from your controllers is real easy
 ```php
 <?php
 
-// Create a simple text response
-$response = new Neat\Http\Response('Hello world!');
+// First create the output helper using a PSR-17 factory
+$factory = new Example\Factory();
+$output  = new Neat\Http\Server\Output($factory, $factory);
 
-// Add a header
-$response = $response->withHeader('Content-Type', 'text/plain');
+// Then create a simple text response (it will have the proper Content-Type header set)
+$response = $output->text('Hello world!');
 
-// Use a non-200 status code
-$response = $response->withStatus(403);
+// Or an html response (with the text/html Content-Type header)
+$response = $output->html('<html lang="en"><body>Hi!</body></html>');
+
+// Change or add headers with any Neat\Http\Response
+$response = $output->html('{key:"value"}')->withContentType('application/json');
+
+// Or just let the output create a JSON response directly
+$response = $output->json(['key' => 'value']);
+
+// TODO Fix examples below
+
+// Rendering a view is just as easy using the output helper
+//$response = $output->view('template', ['message' => 'Hello world!']);
+
+// Download a file
+//$response = $output->download(fopen('path/to/really/large/file.bin', 'r+'));
+
+// Display it inline
+//$response = $output->display('path/to/file.pdf');
+
+// Redirect
+//$response = $output->redirect('/go/there/instead');
+
+// Other types of responses
+//$response = $output->response(404, "These aren't the pages you're looking for.");
 ```
 
-Certain types of responses (redirects for example) can become quite cumbersome
-to create. Therefor you can use static factory methods like ```redirect```: 
+In your handler you can use the output helper to convert any return value other
+than a Neat\Http\Response into one.
 ```php
-<?php /** @var Neat\Http\Response $response */
+$factory = new Example\Factory();
+$output  = new Neat\Http\Server\Output($factory, $factory);
 
-// Create a redirection response
-$response = Neat\Http\Response::redirect('/');
+// By default any value that isn't a Neat\Http\Response will be converted to a JSON response  
+$response = $output->resolve(['What now?' => 'My controller just returned this lousy array.']);
 
-// Or create a 204 No Content response using the normal constructor
-$response = new Neat\Http\Response(null);
+// You can learn the output to handle any type using a Response factory
+$output->register('string', function (string $string) use ($output) {
+    return $output->html($string);
+});
+$response = $output->resolve('HELP my controller just returned a string!');
+
+// Null could be your way of returning a 204 No content response
+$output->register('null', function () use ($output) {
+    return $output->response()->withStatus(204);
+});
+
+// If you want objects with a __toString method to convert differently
+$output->register('object', function ($object) use ($output) {
+    if (method_exists($object, '__toString')) {
+        return (string) $object;
+    }
+
+    return $output->json($object);
+});
+
+// You can even target specific classes or interfaces
+$output->register(Psr\Http\Message\StreamInterface::class, function (Psr\Http\Message\StreamInterface $stream) use ($output) {
+    return $output->response()->withBody($stream);
+});
 ```

@@ -3,7 +3,7 @@
 namespace Neat\Http\Server\Test;
 
 use Neat\Http\Response;
-use Neat\Http\Server\Responder;
+use Neat\Http\Server\Output;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -11,11 +11,11 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use stdClass;
 
-class ResponderTest extends TestCase
+class OutputTest extends TestCase
 {
     public function testResolveResponse()
     {
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -34,7 +34,7 @@ class ResponderTest extends TestCase
         $factory = $this->createMock(CallableMock::class);
         $factory->expects($this->once())->method('__invoke')->with($object)->willReturn($response);
 
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -52,7 +52,7 @@ class ResponderTest extends TestCase
         $factory = $this->createMock(CallableMock::class);
         $factory->expects($this->once())->method('__invoke')->with($psrResponse)->willReturn($response);
 
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -71,7 +71,7 @@ class ResponderTest extends TestCase
         $factory = $this->createMock(CallableMock::class);
         $factory->expects($this->once())->method('__invoke')->with($object)->willReturn($response);
 
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -90,7 +90,7 @@ class ResponderTest extends TestCase
         $factory = $this->createMock(CallableMock::class);
         $factory->expects($this->once())->method('__invoke')->with($string)->willReturn($response);
 
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -103,7 +103,7 @@ class ResponderTest extends TestCase
     public function testResolveDefault()
     {
         $response = $this->createMock(Response::class);
-        $responder = $this->createPartialMock(Responder::class, ['json']);
+        $responder = $this->createPartialMock(Output::class, ['json']);
         $responder->expects($this->once())->method('json')->with([])->willReturn($response);
 
         $this->assertSame($response, $responder->resolve([]));
@@ -111,7 +111,7 @@ class ResponderTest extends TestCase
 
     public function testJson()
     {
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -131,7 +131,7 @@ class ResponderTest extends TestCase
 
     public function testText()
     {
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );
@@ -151,7 +151,7 @@ class ResponderTest extends TestCase
 
     public function testHtml()
     {
-        $responder = new Responder(
+        $responder = new Output(
             $responseFactory = $this->createMock(ResponseFactoryInterface::class),
             $streamFactory = $this->createMock(StreamFactoryInterface::class)
         );

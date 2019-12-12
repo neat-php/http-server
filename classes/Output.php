@@ -7,7 +7,7 @@ use Neat\Http\Response;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-class Responder
+class Output
 {
     /** @var ResponseFactoryInterface */
     private $responseFactory;

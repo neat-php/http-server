@@ -271,16 +271,16 @@ class Router
      *
      * @param string $method
      * @param string $path
-     * @param array  $parameters
+     * @param array  $arguments
      * @param array  $middleware
      * @return callable
      */
-    public function match(string $method, string $path, array &$parameters = null, array &$middleware = null)
+    public function match(string $method, string $path, array &$arguments = null, array &$middleware = null)
     {
-        $parameters = [];
+        $arguments  = [];
         $middleware = [];
 
-        $map = $this->matchPath($this->split($path), $parameters);
+        $map = $this->matchPath($this->split($path), $arguments);
         if (!$map) {
             throw new RouteNotFoundException('Route not found');
         }

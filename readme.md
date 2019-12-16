@@ -6,6 +6,13 @@ Neat HTTP Server components
 Neat HTTP server components provide a clean and expressive API for your
 application to receive HTTP requests and send HTTP responses.
 
+Requirements
+------------
+To use Neat HTTP Server components you will need
+- PHP 7.0 or newer
+- a [PSR-7 HTTP message implementation](https://packagist.org/providers/psr/http-message-implementation)
+- a [PSR-17 HTTP factory implementation](https://packagist.org/providers/psr/http-factory-implementation)
+
 Getting started
 ---------------
 To install this package, simply issue [composer](https://getcomposer.org) on the
@@ -13,11 +20,6 @@ command line:
 ```
 composer require neat/http-server
 ```
-
-Additionally, you will need
-a [PSR-7 HTTP message implementation](https://packagist.org/providers/psr/http-message-implementation)
-and a [PSR-17 HTTP factory implementation](https://packagist.org/providers/psr/http-factory-implementation)
-to use Neat HTTP components.
 
 Server
 ------
@@ -58,14 +60,14 @@ Handlers
 Handlers can be written from scratch using the Handler interface or created
 using one of the provided adapters:
 ```php
-<?php
+<?php /** @noinspection PhpInconsistentReturnPointsInspection */
 
 // Write a handler from scratch
 class Handler implements Neat\Http\Server\Handler
 {
     public function handle(Neat\Http\Request $request): Neat\Http\Response
     {
-        return new Neat\Http\Response(new Nyholm\Psr7\Response('Hello world!'));
+        // return new Neat\Http\Response(...);
     }
 }
 

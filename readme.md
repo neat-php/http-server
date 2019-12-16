@@ -65,7 +65,7 @@ using one of the provided adapters:
 // Write a handler from scratch
 class Handler implements Neat\Http\Server\Handler
 {
-    public function handle(Neat\Http\Request $request): Neat\Http\Response
+    public function handle(Neat\Http\ServerRequest $request): Neat\Http\Response
     {
         // return new Neat\Http\Response(...);
     }
@@ -92,7 +92,7 @@ handler and the messages going in and out.
 // Write a middleware from scratch
 class Middleware implements Neat\Http\Server\Middleware
 {
-    public function process(Neat\Http\Request $request, Neat\Http\Server\Handler $handler): Neat\Http\Response
+    public function process(Neat\Http\ServerRequest $request, Neat\Http\Server\Handler $handler): Neat\Http\Response
     {
         return $handler->handle($request);
     }
@@ -100,7 +100,7 @@ class Middleware implements Neat\Http\Server\Middleware
 
 // Or using a closure
 $handler = new Neat\Http\Server\Middleware\CallableMiddleware(
-function (Neat\Http\Request $request, Neat\Http\Server\Handler $handler) {
+function (Neat\Http\ServerRequest $request, Neat\Http\Server\Handler $handler) {
     return $handler->handle($request);
 });
 ```
@@ -123,7 +123,7 @@ $dispatcher = new Neat\Http\Server\Dispatcher(
 
 // Then using the request we can ask the dispatcher to handle the request and
 // return the response from the handler through the middleware.
-/** @var Neat\Http\Request $request */
+/** @var Neat\Http\ServerRequest $request */
 $response = $dispatcher->handle($request);
 ```
 

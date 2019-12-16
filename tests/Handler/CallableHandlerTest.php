@@ -2,8 +2,8 @@
 
 namespace Neat\Http\Server\Test\Handler;
 
-use Neat\Http\Request;
 use Neat\Http\Response;
+use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Handler\CallableHandler;
 use Neat\Http\Server\Test\CallableMock;
@@ -22,7 +22,7 @@ class CallableHandlerTest extends TestCase
 
     public function testHandle()
     {
-        $request  = $this->createMock(Request::class);
+        $request  = $this->createMock(ServerRequest::class);
         $response = $this->createMock(Response::class);
         $callable = $this->createMock(CallableMock::class);
         $callable

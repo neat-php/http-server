@@ -2,8 +2,8 @@
 
 namespace Neat\Http\Server\Test\Middleware;
 
-use Neat\Http\Request;
 use Neat\Http\Response;
+use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Middleware\CallableMiddleware;
 use Neat\Http\Server\Test\CallableMock;
@@ -23,7 +23,7 @@ class CallableMiddlewareTest extends TestCase
 
     public function testProcess()
     {
-        $request  = $this->createMock(Request::class);
+        $request  = $this->createMock(ServerRequest::class);
         $response = $this->createMock(Response::class);
         $handler  = $this->createMock(Handler::class);
 

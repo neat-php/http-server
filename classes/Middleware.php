@@ -2,15 +2,15 @@
 
 namespace Neat\Http\Server;
 
-use Neat\Http\Request;
+use Neat\Http\ServerRequest;
 use Neat\Http\Response;
 
 interface Middleware
 {
     /**
-     * @param Request $request
+     * @param ServerRequest $request
      * @param Handler $handler
      * @return Response
      */
-    public function process(Request $request, Handler $handler): Response;
+    public function process(ServerRequest $request, Handler $handler): Response;
 }

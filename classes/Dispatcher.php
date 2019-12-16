@@ -2,7 +2,7 @@
 
 namespace Neat\Http\Server;
 
-use Neat\Http\Request;
+use Neat\Http\ServerRequest;
 use Neat\Http\Response;
 use Neat\Http\Server\Handler\CallableHandler;
 
@@ -23,10 +23,10 @@ class Dispatcher implements Handler
     }
 
     /**
-     * @param Request $request
+     * @param ServerRequest $request
      * @return Response
      */
-    public function handle(Request $request): Response
+    public function handle(ServerRequest $request): Response
     {
         return $this->stack->handle($request);
     }
@@ -42,7 +42,7 @@ class Dispatcher implements Handler
             $layer = array_shift($middleware);
             $stack = $this->stack($handler, $middleware);
 
-            return new CallableHandler(function (Request $request) use ($layer, $stack): Response {
+            return new CallableHandler(function (ServerRequest $request) use ($layer, $stack): Response {
                 return $layer->process($request, $stack);
             });
         }

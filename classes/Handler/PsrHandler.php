@@ -2,7 +2,7 @@
 
 namespace Neat\Http\Server\Handler;
 
-use Neat\Http\Request;
+use Neat\Http\ServerRequest;
 use Neat\Http\Response;
 use Neat\Http\Server\Handler;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -31,10 +31,10 @@ class PsrHandler implements Handler
     }
 
     /**
-     * @param Request $request
+     * @param ServerRequest $request
      * @return Response
      */
-    public function handle(Request $request): Response
+    public function handle(ServerRequest $request): Response
     {
         return new Response($this->handler->handle($request->psr()));
     }

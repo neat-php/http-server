@@ -2,8 +2,8 @@
 
 namespace Neat\Http\Server\Test\Handler;
 
-use Neat\Http\Request;
 use Neat\Http\Response;
+use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Handler\PsrHandler;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +32,7 @@ class PsrHandlerTest extends TestCase
             ->with($psrRequest)
             ->willReturn($psrResponse);
 
-        $request = $this->createMock(Request::class);
+        $request = $this->createMock(ServerRequest::class);
         $request
             ->expects($this->once())
             ->method('psr')

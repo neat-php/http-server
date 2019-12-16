@@ -2,7 +2,7 @@
 
 namespace Neat\Http\Server\Middleware;
 
-use Neat\Http\Request;
+use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler\PsrHandler;
 use Neat\Http\Server\Middleware;
 use Psr\Http\Message\ResponseInterface;
@@ -30,6 +30,6 @@ class PsrWrapper implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return $this->middleware->process(new Request($request), new PsrHandler($handler))->psr();
+        return $this->middleware->process(new ServerRequest($request), new PsrHandler($handler))->psr();
     }
 }

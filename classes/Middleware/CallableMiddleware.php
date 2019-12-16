@@ -2,8 +2,8 @@
 
 namespace Neat\Http\Server\Middleware;
 
-use Neat\Http\Request;
 use Neat\Http\Response;
+use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Middleware;
 
@@ -31,11 +31,11 @@ class CallableMiddleware implements Middleware
     }
 
     /**
-     * @param Request $request
+     * @param ServerRequest $request
      * @param Handler $handler
      * @return Response
      */
-    public function process(Request $request, Handler $handler): Response
+    public function process(ServerRequest $request, Handler $handler): Response
     {
         return ($this->middleware)($request, $handler);
     }

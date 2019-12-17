@@ -14,9 +14,7 @@ class Output
     /** @var ResponseFactoryInterface */
     private $responseFactory;
 
-    /** @var StreamFacto.
-     * .ryInterface
-     */
+    /** @var StreamFactoryInterface */
     private $streamFactory;
 
     /** @var callable */

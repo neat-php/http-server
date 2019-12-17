@@ -33,7 +33,7 @@ $factory = new Example\Factory();
 $server = new Neat\Http\Server\Server($factory, $factory, $factory);
 
 // Write a handler to handle incoming requests
-$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\Request $request) {
+$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\ServerRequest $request) {
     // return new Neat\Http\Response(...);
 });
 ```
@@ -72,7 +72,7 @@ class Handler implements Neat\Http\Server\Handler
 }
 
 // Alternatively write a handler using a closure
-$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\Request $request) {
+$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\ServerRequest $request) {
     // return new Neat\Http\Response(...);
 });
 

@@ -149,16 +149,14 @@ $response = $output->html('{key:"value"}')->withContentType('application/json');
 // Or just let the output create a JSON response directly
 $response = $output->json(['key' => 'value']);
 
-// TODO Fix examples below
-
 // Rendering a view is just as easy using the output helper
-//$response = $output->view('template', ['message' => 'Hello world!']);
+$response = $output->view('template', ['message' => 'Hello world!']);
 
 // Download a file
-//$response = $output->download(fopen('path/to/really/large/file.bin', 'r+'));
+$response = $output->download(fopen('path/to/really/large/file.bin', 'r+'));
 
 // Display it inline
-//$response = $output->display('path/to/file.pdf');
+$response = $output->display('path/to/file.pdf');
 
 // Redirect
 //$response = $output->redirect('/go/there/instead');
@@ -173,7 +171,7 @@ $response = $output->json(['key' => 'value']);
 //$response = $output->retry($input);
 
 // Other types of responses
-//$response = $output->response(404, "These aren't the pages you're looking for.");
+$response = $output->response(404, "These aren't the pages you're looking for.");
 ```
 
 In your handler you can use the output helper to convert any return value other

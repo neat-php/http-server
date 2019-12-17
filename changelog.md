@@ -10,3 +10,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Middleware dispatcher.
 - Middleware interface and implementations for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) middleware. 
 - Handler interface implementation for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) handlers.
+- Output helper.

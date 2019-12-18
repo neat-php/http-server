@@ -121,7 +121,7 @@ class Output
      * @param array  $data
      * @return Response
      */
-    public function view(string $template, array $data): Response
+    public function view(string $template, array $data = []): Response
     {
         return $this->html(($this->viewRenderer)($template, $data));
     }

@@ -45,6 +45,14 @@ class Input
     }
 
     /**
+     * @return ServerRequest
+     */
+    public function request(): ServerRequest
+    {
+        return $this->request;
+    }
+
+    /**
      * Clear the input
      */
     public function clear()

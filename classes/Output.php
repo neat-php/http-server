@@ -180,4 +180,12 @@ class Output
     {
         return new Response($this->responseFactory->createResponse($code, $reason));
     }
+
+    /**
+     * @return Output\Redirect
+     */
+    public function redirect(): Output\Redirect
+    {
+        return new Output\Redirect($this->responseFactory);
+    }
 }

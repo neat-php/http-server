@@ -158,21 +158,38 @@ $response = $output->download(fopen('path/to/really/large/file.bin', 'r+'));
 // Display it inline
 $response = $output->display('path/to/file.pdf');
 
-// Redirect
-//$response = $output->redirect('/go/there/instead');
-
-// Redirect back
-//$response = $output->redirectBack($request);
-
-// Refresh
-//$response = $output->refresh($request);
-
-// Retry input
-//$response = $output->retry($input);
-
 // Other types of responses
 $response = $output->response(404, "These aren't the pages you're looking for.");
 ```
+
+Redirect
+--------
+Redirecting a client to another URL is easy using the redirect output helper.
+```php
+<?php
+/** @var Neat\Http\Server\Input $input */
+/** @var Neat\Http\Server\Output $output */
+/** @var Neat\Http\ServerRequest $request */
+
+// Redirect to a url
+$response = $output->redirect()->to('/go/there/instead');
+
+// Redirect permanently
+$response = $output->redirect()->permanent()->to('/go/there/instead');
+
+// Redirect and resubmit
+$response = $output->redirect()->resubmit()->to('/submit/there/instead');
+
+// Redirect back to the referring url
+$response = $output->redirect()->back($request);
+
+// Refresh
+$response = $output->redirect()->refresh($request);
+
+// Retry input
+$response = $output->redirect()->retry($input);
+```
+
 
 In your handler you can use the output helper to convert any return value other
 than a Neat\Http\Response into one.

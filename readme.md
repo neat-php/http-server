@@ -24,8 +24,6 @@ composer require neat/http-server
 Server
 ------
 ```php
-<?php
-
 // Create a PSR-17 factory
 $factory = new Example\Factory();
 
@@ -40,8 +38,6 @@ $handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\Serv
 
 Then use the server to receive the request, handle the request and send the response back:
 ```php
-<?php
-
 /** @var Neat\Http\Server\Server $server */
 /** @var Neat\Http\Server\Handler $handler */
 
@@ -60,11 +56,10 @@ Handlers
 Handlers can be written from scratch using the Handler interface or created
 using one of the provided adapters:
 ```php
-<?php /** @noinspection PhpInconsistentReturnPointsInspection */
-
 // Write a handler from scratch
 class Handler implements Neat\Http\Server\Handler
 {
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function handle(Neat\Http\ServerRequest $request): Neat\Http\Response
     {
         // return new Neat\Http\Response(...);
@@ -87,8 +82,6 @@ To intercept incoming requests, outgoing responses and possibly exceptions,
 you can create a Middleware that adds an extra layer of control over your
 handler and the messages going in and out.
 ```php
-<?php
-
 // Write a middleware from scratch
 class Middleware implements Neat\Http\Server\Middleware
 {
@@ -110,8 +103,6 @@ Dispatcher
 To use your middleware when handling the request, you can use the Dispatcher.
 
 ```php
-<?php
-
 // Assuming we have a handler readily available, we can create a Dispatcher
 // with a stack of one or more Middleware instances
 /** @var Neat\Http\Server\Handler $handler */
@@ -131,8 +122,6 @@ Output
 ------
 Creating responses from your controllers is real easy
 ```php
-<?php
-
 // First create the output helper using a PSR-17 factory
 $factory = new Example\Factory();
 $output  = new Neat\Http\Server\Output($factory, $factory);
@@ -166,7 +155,6 @@ Redirect
 --------
 Redirecting a client to another URL is easy using the redirect output helper.
 ```php
-<?php
 /** @var Neat\Http\Server\Input $input */
 /** @var Neat\Http\Server\Output $output */
 /** @var Neat\Http\ServerRequest $request */

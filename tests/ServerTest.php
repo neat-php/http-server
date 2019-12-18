@@ -4,7 +4,7 @@ namespace Neat\Http\Server\Test;
 
 use Neat\Http\Header;
 use Neat\Http\Response;
-use Neat\Http\ServerRequest;
+use Neat\Http\Server\Request;
 use Neat\Http\Server\Server;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestFactoryInterface;
@@ -216,7 +216,7 @@ class ServerTest extends TestCase
 
         $request = $server->receive();
 
-        $this->assertInstanceOf(ServerRequest::class, $request);
+        $this->assertInstanceOf(Request::class, $request);
         $this->assertSame($psrRequest, $request->psr());
     }
 
@@ -279,7 +279,7 @@ class ServerTest extends TestCase
 
         $request = $server->receive();
 
-        $this->assertInstanceOf(ServerRequest::class, $request);
+        $this->assertInstanceOf(Request::class, $request);
         $this->assertSame($psrRequest, $request->psr());
     }
 

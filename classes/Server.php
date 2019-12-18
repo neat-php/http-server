@@ -3,7 +3,6 @@
 namespace Neat\Http\Server;
 
 use Neat\Http\Response;
-use Neat\Http\ServerRequest;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
@@ -102,9 +101,9 @@ class Server
     }
 
     /**
-     * @return ServerRequest
+     * @return Request
      */
-    public function receive(): ServerRequest
+    public function receive(): Request
     {
         $version = str_replace('HTTP/', '', $_SERVER['SERVER_PROTOCOL'] ?? '1.1');
         $method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -124,7 +123,7 @@ class Server
             $serverRequest = $serverRequest->withHeader($name, $value);
         }
 
-        return new ServerRequest($serverRequest);
+        return new Request($serverRequest);
     }
 
     /**

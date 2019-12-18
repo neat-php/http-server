@@ -3,9 +3,9 @@
 namespace Neat\Http\Server\Test\Middleware;
 
 use Neat\Http\Response;
-use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Middleware\PsrMiddleware;
+use Neat\Http\Server\Request;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -36,7 +36,7 @@ class PsrMiddlewareTest extends TestCase
             ->with($psrRequest, $psrHandler)
             ->willReturn($psrResponse);
 
-        $request = $this->createMock(ServerRequest::class);
+        $request = $this->createMock(Request::class);
         $request
             ->expects($this->once())
             ->method('psr')
@@ -68,7 +68,7 @@ class PsrMiddlewareTest extends TestCase
             ->with($psrRequest, $this->isInstanceOf(RequestHandlerInterface::class))
             ->willReturn($psrResponse);
 
-        $request = $this->createMock(ServerRequest::class);
+        $request = $this->createMock(Request::class);
         $request
             ->expects($this->once())
             ->method('psr')

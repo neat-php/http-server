@@ -3,9 +3,9 @@
 namespace Neat\Http\Server\Test\Handler;
 
 use Neat\Http\Response;
-use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Handler\PsrWrapper;
+use Neat\Http\Server\Request;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -27,7 +27,7 @@ class PsrWrapperTest extends TestCase
         $handler
             ->expects($this->once())
             ->method('handle')
-            ->with($this->isInstanceOf(ServerRequest::class))
+            ->with($this->isInstanceOf(Request::class))
             ->willReturn($response);
 
         $psrWrapper = new PsrWrapper($handler);

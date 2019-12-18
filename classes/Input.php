@@ -2,13 +2,11 @@
 
 namespace Neat\Http\Server;
 
-use Neat\Http\ServerRequest;
-use Neat\Http\Upload;
 use RuntimeException;
 
 class Input
 {
-    /** @var ServerRequest */
+    /** @var Request */
     protected $request;
 
     /** @var Session */
@@ -26,10 +24,10 @@ class Input
     /**
      * Input constructor
      *
-     * @param ServerRequest $request
-     * @param Session       $session
+     * @param Request $request
+     * @param Session $session
      */
-    public function __construct(ServerRequest $request, Session $session)
+    public function __construct(Request $request, Session $session)
     {
         $this->request = $request;
         $this->session = $session;
@@ -45,9 +43,9 @@ class Input
     }
 
     /**
-     * @return ServerRequest
+     * @return Request
      */
-    public function request(): ServerRequest
+    public function request(): Request
     {
         return $this->request;
     }

@@ -3,10 +3,10 @@
 namespace Neat\Http\Server\Test\Middleware;
 
 use Neat\Http\Response;
-use Neat\Http\ServerRequest;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Middleware;
 use Neat\Http\Server\Middleware\PsrWrapper;
+use Neat\Http\Server\Request;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,7 +30,7 @@ class PsrWrapperTest extends TestCase
         $middleware
             ->expects($this->once())
             ->method('process')
-            ->with($this->isInstanceOf(ServerRequest::class), $this->isInstanceOf(Handler::class))
+            ->with($this->isInstanceOf(Request::class), $this->isInstanceOf(Handler::class))
             ->willReturn($response);
 
         $psrWrapper = new PsrWrapper($middleware);

@@ -2,7 +2,7 @@
 
 namespace Neat\Http\Server\Handler;
 
-use Neat\Http\ServerRequest;
+use Neat\Http\Server\Request;
 use Neat\Http\Response;
 use Neat\Http\Server\Handler;
 
@@ -30,10 +30,10 @@ class CallableHandler implements Handler
     }
 
     /**
-     * @param ServerRequest $request
+     * @param Request $request
      * @return Response
      */
-    public function handle(ServerRequest $request): Response
+    public function handle(Request $request): Response
     {
         return ($this->handler)($request);
     }

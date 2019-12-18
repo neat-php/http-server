@@ -31,7 +31,7 @@ $factory = new Example\Factory();
 $server = new Neat\Http\Server\Server($factory, $factory, $factory);
 
 // Write a handler to handle incoming requests
-$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\ServerRequest $request) {
+$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\Server\Request $request) {
     // return new Neat\Http\Response(...);
 });
 ```
@@ -60,14 +60,14 @@ using one of the provided adapters:
 class Handler implements Neat\Http\Server\Handler
 {
     /** @noinspection PhpInconsistentReturnPointsInspection */
-    public function handle(Neat\Http\ServerRequest $request): Neat\Http\Response
+    public function handle(Neat\Http\Server\Request $request): Neat\Http\Response
     {
         // return new Neat\Http\Response(...);
     }
 }
 
 // Alternatively write a handler using a closure
-$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\ServerRequest $request) {
+$handler = new Neat\Http\Server\Handler\CallableHandler(function (Neat\Http\Server\Request $request) {
     // return new Neat\Http\Response(...);
 });
 
@@ -85,7 +85,7 @@ handler and the messages going in and out.
 // Write a middleware from scratch
 class Middleware implements Neat\Http\Server\Middleware
 {
-    public function process(Neat\Http\ServerRequest $request, Neat\Http\Server\Handler $handler): Neat\Http\Response
+    public function process(Neat\Http\Server\Request $request, Neat\Http\Server\Handler $handler): Neat\Http\Response
     {
         return $handler->handle($request);
     }
@@ -93,7 +93,7 @@ class Middleware implements Neat\Http\Server\Middleware
 
 // Or using a closure
 $handler = new Neat\Http\Server\Middleware\CallableMiddleware(
-function (Neat\Http\ServerRequest $request, Neat\Http\Server\Handler $handler) {
+function (Neat\Http\Server\Request $request, Neat\Http\Server\Handler $handler) {
     return $handler->handle($request);
 });
 ```
@@ -114,7 +114,7 @@ $dispatcher = new Neat\Http\Server\Dispatcher(
 
 // Then using the request we can ask the dispatcher to handle the request and
 // return the response from the handler through the middleware.
-/** @var Neat\Http\ServerRequest $request */
+/** @var Neat\Http\Server\Request $request */
 $response = $dispatcher->handle($request);
 ```
 
@@ -157,7 +157,7 @@ Redirecting a client to another URL is easy using the redirect output helper.
 ```php
 /** @var Neat\Http\Server\Input $input */
 /** @var Neat\Http\Server\Output $output */
-/** @var Neat\Http\ServerRequest $request */
+/** @var Neat\Http\Server\Request $request */
 
 // Redirect to a url
 $response = $output->redirect()->to('/go/there/instead');

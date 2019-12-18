@@ -2,9 +2,9 @@
 
 namespace Neat\Http\Server\Test;
 
-use Neat\Http\ServerRequest;
 use Neat\Http\Server\Input;
-use Neat\Http\Upload;
+use Neat\Http\Server\Request;
+use Neat\Http\Server\Upload;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,7 +26,7 @@ class InputTest extends TestCase
         $psrRequest->expects($this->any())->method('getUploadedFiles')->willReturn([]);
         $psrRequest->expects($this->any())->method('getCookieParams')->willReturn([]);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->load('query', 'post', 'files', 'cookie');
 
         $this->assertSame([], $input->all());
@@ -52,7 +52,7 @@ class InputTest extends TestCase
         $psrRequest->expects($this->any())->method('getUploadedFiles')->willReturn(['var' => $psrUpload]);
         $psrRequest->expects($this->any())->method('getCookieParams')->willReturn(['var' => 'cookie']);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->load('query', 'post', 'files', 'cookie');
 
         $input->load('query');
@@ -76,7 +76,7 @@ class InputTest extends TestCase
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->set('var', 'value');
 
         $this->assertSame(['var' => 'value'], $input->all());
@@ -92,7 +92,7 @@ class InputTest extends TestCase
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
 
         $this->expectExceptionObject(new RuntimeException('Input sources must not be empty'));
 
@@ -107,7 +107,7 @@ class InputTest extends TestCase
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
 
         $this->expectExceptionObject(new RuntimeException('Unknown input source: internet'));
 
@@ -123,7 +123,7 @@ class InputTest extends TestCase
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
         $psrRequest->expects($this->any())->method('getQueryParams')->willReturn(['var' => ' test ']);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->load('query');
 
         $this->assertSame(' test ', $input->get('var'));
@@ -174,7 +174,7 @@ class InputTest extends TestCase
             return [];
         };
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->load('query');
         $input->register('even', $even);
 
@@ -232,7 +232,7 @@ class InputTest extends TestCase
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
         $psrRequest->expects($this->any())->method('getQueryParams')->willReturn(['var' => $value]);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->load('query');
 
         $this->assertSame($filtered, $input->$type('var'));
@@ -250,7 +250,7 @@ class InputTest extends TestCase
         $psrRequest->expects($this->any())->method('getParsedBody')->willReturn(['bool' => true]);
         $psrRequest->expects($this->any())->method('getUploadedFiles')->willReturn(['upload' => $psrUpload]);
 
-        $input = new Input(new ServerRequest($psrRequest), new SessionMock());
+        $input = new Input(new Request($psrRequest), new SessionMock());
         $input->load('post', 'files');
 
         $this->assertNull($input->file('bool'));

@@ -3,10 +3,10 @@
 namespace Neat\Http\Server\Test;
 
 use Neat\Http\Response;
-use Neat\Http\ServerRequest;
 use Neat\Http\Server\Dispatcher;
 use Neat\Http\Server\Handler;
 use Neat\Http\Server\Middleware;
+use Neat\Http\Server\Request;
 use PHPUnit\Framework\TestCase;
 
 class DispatcherTest extends TestCase
@@ -16,7 +16,7 @@ class DispatcherTest extends TestCase
      */
     public function testHandleWithoutMiddleware()
     {
-        $request  = $this->createMock(ServerRequest::class);
+        $request  = $this->createMock(Request::class);
         $response = $this->createMock(Response::class);
         $handler  = $this->createMock(Handler::class);
         $handler->expects($this->once())->method('handle')->with($request)->willReturn($response);
@@ -31,7 +31,7 @@ class DispatcherTest extends TestCase
      */
     public function testHandleWithImmediateMiddlewareInterception()
     {
-        $request  = $this->createMock(ServerRequest::class);
+        $request  = $this->createMock(Request::class);
         $response = $this->createMock(Response::class);
 
         $middleware1 = $this->createMock(Middleware::class);
@@ -63,8 +63,8 @@ class DispatcherTest extends TestCase
      */
     public function testHandleWithMiddlewareInterception()
     {
-        $requestA  = $this->createMock(ServerRequest::class);
-        $requestB  = $this->createMock(ServerRequest::class);
+        $requestA  = $this->createMock(Request::class);
+        $requestB  = $this->createMock(Request::class);
         $responseA = $this->createMock(Response::class);
         $responseB = $this->createMock(Response::class);
 
@@ -73,7 +73,7 @@ class DispatcherTest extends TestCase
             ->expects($this->once())
             ->method('process')
             ->with($requestA)
-            ->will($this->returnCallback(function (ServerRequest $requestA, Handler $handler) use ($requestB, $responseA, $responseB) {
+            ->will($this->returnCallback(function (Request $requestA, Handler $handler) use ($requestB, $responseA, $responseB) {
                 $this->assertSame($responseB, $handler->handle($requestB));
 
                 return $responseA;
@@ -103,9 +103,9 @@ class DispatcherTest extends TestCase
      */
     public function testHandleWithMiddlewareHandling()
     {
-        $requestA  = $this->createMock(ServerRequest::class);
-        $requestB  = $this->createMock(ServerRequest::class);
-        $requestC  = $this->createMock(ServerRequest::class);
+        $requestA  = $this->createMock(Request::class);
+        $requestB  = $this->createMock(Request::class);
+        $requestC  = $this->createMock(Request::class);
         $responseA = $this->createMock(Response::class);
         $responseB = $this->createMock(Response::class);
         $responseC = $this->createMock(Response::class);
@@ -115,7 +115,7 @@ class DispatcherTest extends TestCase
             ->expects($this->once())
             ->method('process')
             ->with($requestA)
-            ->will($this->returnCallback(function (ServerRequest $requestA, Handler $handler) use ($requestB, $responseA, $responseB) {
+            ->will($this->returnCallback(function (Request $requestA, Handler $handler) use ($requestB, $responseA, $responseB) {
                 $this->assertSame($responseB, $handler->handle($requestB));
 
                 return $responseA;
@@ -126,7 +126,7 @@ class DispatcherTest extends TestCase
             ->expects($this->once())
             ->method('process')
             ->with($requestB)
-            ->will($this->returnCallback(function (ServerRequest $requestA, Handler $handler) use ($requestC, $responseB, $responseC) {
+            ->will($this->returnCallback(function (Request $requestA, Handler $handler) use ($requestC, $responseB, $responseC) {
                 $this->assertSame($responseC, $handler->handle($requestC));
 
                 return $responseB;

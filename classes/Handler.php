@@ -2,14 +2,13 @@
 
 namespace Neat\Http\Server;
 
-use Neat\Http\ServerRequest;
 use Neat\Http\Response;
 
 interface Handler
 {
     /**
-     * @param ServerRequest $request
+     * @param Request $request
      * @return Response
      */
-    public function handle(ServerRequest $request): Response;
+    public function handle(Request $request): Response;
 }

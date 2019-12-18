@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Server implementation using [PSR-17](https://www.php-fig.org/psr/psr-17/) HTTP factories.
+- Request implementation (ServerRequestInterface wrapper).
+- Upload implementation (UploadedFileInterface wrapper).
 - Middleware dispatcher.
 - Middleware interface and implementations for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) middleware. 
 - Handler interface implementation for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) handlers.

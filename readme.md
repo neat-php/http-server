@@ -191,7 +191,7 @@ $response = $output->resolve('HELP my controller just returned a string!');
 
 // Null could be your way of returning a 204 No content response
 $output->register('null', function () use ($output) {
-    return $output->response()->withStatus(204);
+    return $output->response(204);
 });
 
 // If you want objects with a __toString method to convert differently

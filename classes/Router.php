@@ -32,7 +32,10 @@ class Router
     private $methodHandler = [];
 
     /** @var array */
-    private $methodMiddleware;
+    private $methodMiddleware = [];
+
+    /** @var array */
+    private $middleware = [];
 
     /**
      * Router constructor
@@ -145,11 +148,15 @@ class Router
      * Get a sub-router
      *
      * @param string $url
+     * @param array  $middleware
      * @return Router
      */
-    public function in(string $url): Router
+    public function in(string $url, ...$middleware): Router
     {
-        return $this->map($this->split($url));
+        $router = $this->map($this->split($url));
+        $router->middleware = $middleware;
+
+        return $router;
     }
 
     /**
@@ -211,18 +218,21 @@ class Router
      *
      * @param array $segments
      * @param array $arguments
+     * @param array $middleware
      * @return Router|null
      */
-    private function matchPath(array $segments, &$arguments = [])
+    private function matchPath(array $segments, &$arguments = [], &$middleware = [])
     {
         if (!$segments) {
             return $this;
         }
 
         $segment = array_shift($segments);
-        if (isset($this->literals[$segment])) {
-            $match = $this->literals[$segment]->matchPath($segments, $arguments);
+        if ($literal = $this->literals[$segment] ?? null) {
+            $match = $literal->matchPath($segments, $arguments, $middleware);
             if ($match && $match->methodHandler) {
+                array_splice($middleware, 0, 0, $literal->middleware);
+
                 return $match;
             }
         }
@@ -230,9 +240,10 @@ class Router
             if ($variable->expression && !preg_match($variable->expression, $segment)) {
                 continue;
             }
-            $match = $variable->matchPath($segments, $arguments);
+            $match = $variable->matchPath($segments, $arguments, $middleware);
             if ($match && $match->methodHandler) {
                 $arguments[$variable->name] = $segment;
+                array_splice($middleware, 0, 0, $variable->middleware);
 
                 return $match;
             }
@@ -240,6 +251,7 @@ class Router
         if ($this->wildcard && $this->wildcard->methodHandler) {
             array_unshift($segments, $segment);
             $arguments = $segments;
+            array_splice($middleware, 0, 0, $this->wildcard->middleware);
 
             return $this->wildcard;
         }
@@ -278,9 +290,9 @@ class Router
     public function match(string $method, string $path, array &$arguments = null, array &$middleware = null)
     {
         $arguments  = [];
-        $middleware = [];
+        $middleware = $this->middleware;
 
-        $map = $this->matchPath($this->split($path), $arguments);
+        $map = $this->matchPath($this->split($path), $arguments, $middleware);
         if (!$map) {
             throw new RouteNotFoundException('Route not found');
         }

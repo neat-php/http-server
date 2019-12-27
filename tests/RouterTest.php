@@ -140,6 +140,42 @@ class RouterTest extends TestCase
     }
 
     /**
+     * Test middleware
+     */
+    public function testRecursiveMiddleware()
+    {
+        $router = new Router();
+        $router->get('/', 'HomeController');
+        $router->in('/admin', 'AuthenticationMiddleware');
+        $router->get('/admin', 'AdminController');
+        $router->post('/admin', 'AdminController', 'CsrfMiddleware');
+
+        $router->in('/admin/firewall', 'FirewallMiddleware');
+        $router->get('/admin/firewall', 'AdminController');
+        $router->post('/admin/firewall', 'AdminController', 'CsrfMiddleware');
+
+        $router->match('GET', '/', $arguments, $middleware);
+        $this->assertSame([], $middleware);
+
+        $router->match('GET', '/admin', $arguments, $middleware);
+        $this->assertSame(['AuthenticationMiddleware'], $middleware);
+
+        $router->match('GET', '/', $arguments, $middleware);
+        $this->assertSame([], $middleware);
+
+        $router->match('POST', '/admin', $arguments, $middleware);
+        $this->assertSame(['AuthenticationMiddleware', 'CsrfMiddleware'], $middleware);
+
+        $router->match('GET', '/admin/firewall', $arguments, $middleware);
+        $this->assertSame(['AuthenticationMiddleware', 'FirewallMiddleware'], $middleware);
+
+        $arguments = null;
+        $middleware = null;
+        $router->match('POST', '/admin/firewall', $arguments, $middleware);
+        $this->assertSame(['AuthenticationMiddleware', 'FirewallMiddleware', 'CsrfMiddleware'], $middleware);
+    }
+
+    /**
      * @return array
      */
     public function provideExceptionData(): array

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2019-12-27
+### Added
+- Router middleware in an entire path (recursively).
+
 ## [0.1.0] - 2019-12-19
 ### Added
 - Server implementation using [PSR-17](https://www.php-fig.org/psr/psr-17/) HTTP factories.

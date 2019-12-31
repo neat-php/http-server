@@ -28,6 +28,9 @@ class Router
     /** @var Router|null */
     private $wildcard;
 
+    /** @var string */
+    private $variadic;
+
     /** @var callable[] */
     private $methodHandler = [];
 
@@ -181,6 +184,11 @@ class Router
         if (!$segment = array_shift($segments)) {
             return $this;
         }
+        if (strpos($segment, '...$') === 0) {
+            $this->variadic = substr($segment, 4);
+
+            return $this;
+        }
 
         $map = $this->literals[$segment]
             ?? $this->variables[$segment]
@@ -224,6 +232,10 @@ class Router
     private function matchPath(array $segments, &$arguments = [], &$middleware = [])
     {
         if (!$segments) {
+            if ($this->variadic) {
+                $arguments[$this->variadic] = [];
+            }
+
             return $this;
         }
 
@@ -247,6 +259,12 @@ class Router
 
                 return $match;
             }
+        }
+        if ($this->variadic && $this->methodHandler) {
+            array_unshift($segments, $segment);
+            $arguments[$this->variadic] = $segments;
+
+            return $this;
         }
         if ($this->wildcard && $this->wildcard->methodHandler) {
             array_unshift($segments, $segment);

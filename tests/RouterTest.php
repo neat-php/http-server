@@ -76,6 +76,23 @@ class RouterTest extends TestCase
         $this->assertSame('test-any', $router->match('POST', '/'));
     }
 
+    public function testVariadic()
+    {
+        $router = new Router();
+        $router->get('/test', 'Test');
+        $router->get('/test/...$all', 'TestVariadic');
+        $router->get('/...$all', 'RootVariadic');
+
+        $this->assertSame('TestVariadic', $router->match('get', '/test', $arguments));
+        $this->assertSame(['all' => []], $arguments);
+
+        $this->assertSame('TestVariadic', $router->match('get', '/test/first', $arguments));
+        $this->assertSame(['all' => ['first']], $arguments);
+
+        $this->assertSame('TestVariadic', $router->match('get', '/test/first/second', $arguments));
+        $this->assertSame(['all' => ['first', 'second']], $arguments);
+    }
+
     public function testWildcardVersusPartialMatch()
     {
         $router = new Router();

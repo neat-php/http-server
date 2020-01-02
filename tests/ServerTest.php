@@ -6,6 +6,7 @@ use Neat\Http\Header;
 use Neat\Http\Response;
 use Neat\Http\Server\Request;
 use Neat\Http\Server\Server;
+use Neat\Http\Status;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -363,17 +364,27 @@ class ServerTest extends TestCase
         $body->expects($this->once())->method('isReadable')->willReturn(false);
         $body->expects($this->once())->method('__toString')->willReturn('Hello world!');
 
-        $header = $this->createMock(Header::class);
-        $header->expects($this->once())->method('line')->willReturn('Content-Type: text/html');
+        $contentType = $this->createMock(Header::class);
+        $contentType->expects($this->once())->method('name')->willReturn('Content-Type');
+        $contentType->expects($this->once())->method('line')->willReturn('Content-Type: text/html');
+        $setCookie = $this->createMock(Header::class);
+        $setCookie->expects($this->once())->method('name')->willReturn('Set-Cookie');
+        $setCookie->expects($this->once())->method('line')->willReturn('Set-Cookie: test');
+        $setCookie2 = $this->createMock(Header::class);
+        $setCookie2->expects($this->once())->method('name')->willReturn('Set-Cookie');
+        $setCookie2->expects($this->once())->method('line')->willReturn('Set-Cookie: test2');
 
         $response = $this->createMock(Response::class);
         $response->expects($this->once())->method('statusLine')->willReturn('HTTP/1.1 200 OK');
-        $response->expects($this->once())->method('headers')->willReturn([$header]);
+        $response->expects($this->once())->method('status')->willReturn(new Status(200));
+        $response->expects($this->once())->method('headers')->willReturn([$contentType, $setCookie, $setCookie2]);
         $response->expects($this->once())->method('bodyStream')->willReturn($body);
 
         $transmitter = $this->createMock(CallableMock::class);
         $transmitter->expects($this->at(0))->method('__invoke')->with('HTTP/1.1 200 OK');
-        $transmitter->expects($this->at(1))->method('__invoke')->with('Content-Type: text/html');
+        $transmitter->expects($this->at(1))->method('__invoke')->with('Content-Type: text/html', true, 200);
+        $transmitter->expects($this->at(2))->method('__invoke')->with('Set-Cookie: test', false, 200);
+        $transmitter->expects($this->at(3))->method('__invoke')->with('Set-Cookie: test2', false, 200);
 
         $server = new Server(
             $this->createMock(ServerRequestFactoryInterface::class),

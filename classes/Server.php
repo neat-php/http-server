@@ -132,19 +132,23 @@ class Server
     public function send(Response $response)
     {
         $this->sendHeader($response->statusLine());
+        $httpResponseCode = $response->status()->code();
         foreach ($response->headers() as $header) {
-            $this->sendHeader($header->line());
+            $replace = $header->name() !== 'Set-Cookie';
+            $this->sendHeader($header->line(), $replace, $httpResponseCode);
         }
 
         $this->sendBody($response->bodyStream());
     }
 
     /**
-     * @param string $line
+     * @param string   $line
+     * @param bool     $replace
+     * @param int|null $httpResponseCode
      */
-    public function sendHeader(string $line)
+    public function sendHeader(string $line, bool $replace = true, int $httpResponseCode = null)
     {
-        ($this->headerTransmitter)($line);
+        ($this->headerTransmitter)($line, $replace, $httpResponseCode);
     }
 
     /**

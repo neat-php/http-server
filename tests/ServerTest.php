@@ -163,6 +163,35 @@ class ServerTest extends TestCase
     }
 
     /**
+     * Test receiving uploaded files from an invalid files array
+     */
+    public function testReceiveNoFile()
+    {
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class),
+            $uploadedFileFactory = $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        $stream = $this->createMock(StreamInterface::class);
+        $upload = $this->createMock(UploadedFileInterface::class);
+
+        $streamFactory->expects($this->once())->method('createStream')->with('')->willReturn($stream);
+        $uploadedFileFactory->expects($this->once())->method('createUploadedFile')->with($stream, 0, 4, '', '')->willReturn($upload);
+
+        $this->assertNull($server->receiveUploadedFiles(null));
+        $this->assertSame(['empty' => $upload], $server->receiveUploadedFiles([
+            'empty' => [
+                'name'     => '',
+                'type'     => '',
+                'size'     => 0,
+                'tmp_name' => '',
+                'error'    => UPLOAD_ERR_NO_FILE,
+            ],
+        ]));
+    }
+
+    /**
      * Test receive body
      */
     public function testReceiveBody()

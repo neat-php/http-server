@@ -73,8 +73,12 @@ class Server
             return array_filter(array_map([$this, 'receiveUploadedFiles'], $files));
         }
 
+        $stream = $files['error']
+                ? $this->streamFactory->createStream('')
+                : $this->streamFactory->createStreamFromFile($files['tmp_name']);
+
         return $this->uploadedFileFactory->createUploadedFile(
-            $this->streamFactory->createStreamFromFile($files['tmp_name']),
+            $stream,
             $files['size'],
             $files['error'],
             $files['name'],

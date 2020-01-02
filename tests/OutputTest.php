@@ -121,7 +121,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['application/json'])->willReturnSelf();
+        $response->expects($this->once())->method('withHeader')->with('Content-Type', 'application/json')->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -141,7 +141,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['text/plain'])->willReturnSelf();
+        $response->expects($this->once())->method('withHeader')->with('Content-Type', 'text/plain')->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -161,7 +161,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['text/html'])->willReturnSelf();
+        $response->expects($this->once())->method('withHeader')->with('Content-Type', 'text/html')->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -184,7 +184,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['text/html'])->willReturnSelf();
+        $response->expects($this->once())->method('withHeader')->with('Content-Type', 'text/html')->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -224,8 +224,8 @@ class OutputTest extends TestCase
         $streamFactory->expects($this->once())->method('createStreamFromResource')->with($resource)->willReturn($stream);
 
         $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', [$disposition])->willReturnSelf();
-        $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  ['application/octet-stream'])->willReturnSelf();
+        $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', $disposition)->willReturnSelf();
+        $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  'application/octet-stream')->willReturnSelf();
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
@@ -251,8 +251,8 @@ class OutputTest extends TestCase
         $streamFactory->expects($this->once())->method('createStreamFromFile')->with($file)->willReturn($stream);
 
         $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', [$disposition])->willReturnSelf();
-        $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  ['application/octet-stream'])->willReturnSelf();
+        $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', $disposition)->willReturnSelf();
+        $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  'application/octet-stream')->willReturnSelf();
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);

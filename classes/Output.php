@@ -142,11 +142,16 @@ class Output
         } else {
             throw new RuntimeException('File must be a valid string or resource');
         }
-
-        return $this->response()
+        $size     = $body->getSize();
+        $response = $this->response()
             ->withContentDisposition($disposition, $filename)
             ->withContentType($type)
             ->withBody($body);
+        if ($size !== null) {
+            $response = $response->withContentLength($size);
+        }
+
+        return $response;
     }
 
     /**

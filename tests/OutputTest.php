@@ -226,7 +226,7 @@ class OutputTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', [$disposition])->willReturnSelf();
         $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  ['application/octet-stream'])->willReturnSelf();
-        $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
+        $response->expects($this->at(2))->method('withBody')->with($stream)->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -247,6 +247,64 @@ class OutputTest extends TestCase
 
         $file   = '/path/to/file';
         $stream = $this->createMock(StreamInterface::class);
+
+        $streamFactory->expects($this->once())->method('createStreamFromFile')->with($file)->willReturn($stream);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', [$disposition])->willReturnSelf();
+        $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  ['application/octet-stream'])->willReturnSelf();
+        $response->expects($this->at(2))->method('withBody')->with($stream)->willReturnSelf();
+
+        $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
+
+        $this->assertSame($response, $output->$method($file)->psr());
+    }
+
+    /**
+     * @dataProvider provideDisposition
+     * @param string $method
+     * @param string $disposition
+     */
+    public function testWithLength(string $method, string $disposition)
+    {
+        $size = rand(0, 1000);
+        $output = new Output(
+            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+        );
+
+        $file   = '/path/to/file';
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->expects($this->once())->method('getSize')->willReturn($size);
+
+        $streamFactory->expects($this->once())->method('createStreamFromFile')->with($file)->willReturn($stream);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->at(0))->method('withHeader')->with('Content-Disposition', [$disposition])->willReturnSelf();
+        $response->expects($this->at(1))->method('withHeader')->with('Content-Type',  ['application/octet-stream'])->willReturnSelf();
+        $response->expects($this->at(2))->method('withBody')->with($stream)->willReturnSelf();
+        $response->expects($this->at(3))->method('withHeader')->with('Content-Length', [$size])->willReturnSelf();
+
+        $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
+
+        $this->assertSame($response, $output->$method($file)->psr());
+    }
+
+    /**
+     * @dataProvider provideDisposition
+     * @param string $method
+     * @param string $disposition
+     */
+    public function testWithOutLength(string $method, string $disposition)
+    {
+        $output = new Output(
+            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+        );
+
+        $file   = '/path/to/file';
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->expects($this->once())->method('getSize')->willReturn(null);
 
         $streamFactory->expects($this->once())->method('createStreamFromFile')->with($file)->willReturn($stream);
 

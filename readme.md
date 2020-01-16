@@ -122,9 +122,11 @@ Output
 ------
 Creating responses from your controllers is real easy
 ```php
-// First create the output helper using a PSR-17 factory
+// First create the output helper using a PSR-17 factory and a templating renderer
 $factory = new Example\Factory();
-$output  = new Neat\Http\Server\Output($factory, $factory);
+$output  = new Neat\Http\Server\Output($factory, $factory, function (string $template, array $data) {
+    // Use any templating engine you like and return the rendered result as a string
+});
 
 // Then create a simple text response (it will have the proper Content-Type header set)
 $response = $output->text('Hello world!');
@@ -148,7 +150,7 @@ $response = $output->download(fopen('path/to/really/large/file.bin', 'r+'));
 $response = $output->display('path/to/file.pdf');
 
 // Other types of responses
-$response = $output->response(404, "These aren't the pages you're looking for.");
+$response = $output->response(404, 'Page not found');
 ```
 
 Redirect

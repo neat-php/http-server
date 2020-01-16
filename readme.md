@@ -138,7 +138,7 @@ $response = $output->html('{key:"value"}')->withContentType('application/json');
 // Or just let the output create a JSON response directly
 $response = $output->json(['key' => 'value']);
 
-// Rendering a view is just as easy using the output helper
+// Rendering a template view is just as easy using the output helper
 $response = $output->view('template', ['message' => 'Hello world!']);
 
 // Download a file

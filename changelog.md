@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] 
 ### Fixed
 - Receive request hostname using SERVER_NAME when HTTP_HOST is missing from $_SERVER.
+- Match HEAD requests like GET when using the Router.
 
 ## [0.1.5] - 2020-01-14
 ### Added

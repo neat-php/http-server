@@ -286,14 +286,16 @@ class Router
      */
     private function matchMethod(string $method, array &$middleware)
     {
-        $middleware = array_merge(
-            $middleware,
-            $this->methodMiddleware[$method] ?? $this->methodMiddleware['ANY'] ?? []
-        );
+        $methods = $method === 'HEAD' ? ['HEAD', 'GET', 'ANY'] : [$method, 'ANY'];
+        foreach ($methods as $method) {
+            if ($handler = $this->methodHandler[$method] ?? null) {
+                $middleware = array_merge($middleware, $this->methodMiddleware[$method] ?? []);
 
-        return $this->methodHandler[$method]
-            ?? $this->methodHandler['ANY']
-            ?? null;
+                return $handler;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -62,6 +62,7 @@ class RouterTest extends TestCase
         $router->any('/', 'test-any');
         $router->get('/', 'test-get');
 
+        $this->assertSame('test-get', $router->match('HEAD', '/'));
         $this->assertSame('test-get', $router->match('GET', '/'));
         $this->assertSame('test-any', $router->match('POST', '/'));
     }
@@ -72,6 +73,7 @@ class RouterTest extends TestCase
         $router->get('/', 'test-get');
         $router->any('/', 'test-any');
 
+        $this->assertSame('test-get', $router->match('HEAD', '/'));
         $this->assertSame('test-get', $router->match('GET', '/'));
         $this->assertSame('test-any', $router->match('POST', '/'));
     }

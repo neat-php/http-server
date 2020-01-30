@@ -4,7 +4,9 @@ All notable changes to Neat HTTP Server components will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] 
+## [Unreleased]
+
+## [0.1.6] - 2020-01-30
 ### Fixed
 - Receive request hostname using SERVER_NAME when HTTP_HOST is missing from $_SERVER.
 - Match HEAD requests like GET when using the Router.

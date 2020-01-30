@@ -209,6 +209,69 @@ class ServerTest extends TestCase
     }
 
     /**
+     * Test receive method
+     */
+    public function testReceiveMethod()
+    {
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        $this->assertSame('GET', $server->receiveMethod([]));
+        $this->assertSame('GET', $server->receiveMethod(['REQUEST_METHOD' => 'GET']));
+        $this->assertSame('POST', $server->receiveMethod(['REQUEST_METHOD' => 'POST']));
+    }
+
+    /**
+     * Test receive method
+     */
+    public function testReceiveVersion()
+    {
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        $this->assertSame('1.1', $server->receiveVersion([]));
+        $this->assertSame('1.1', $server->receiveVersion(['SERVER_PROTOCOL' => 'HTTP/1.1']));
+        $this->assertSame('2.0', $server->receiveVersion(['SERVER_PROTOCOL' => 'HTTP/2.0']));
+    }
+
+    /**
+     * Test receive method
+     */
+    public function testReceiveUri()
+    {
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class),
+            $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        $this->assertSame('http://example.com/', $server->receiveUri(['HTTP_HOST' => 'example.com']));
+        $this->assertSame('http://example.com/', $server->receiveUri(['SERVER_NAME' => 'example.com']));
+        $this->assertSame('http://example.com/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'SERVER_PORT' => 80]));
+        $this->assertSame('http://example.com:8080/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'SERVER_PORT' => 8080]));
+
+        $this->assertSame('http://example.com/', $server->receiveUri(['HTTP_HOST' => 'example.com', 'HTTPS' => 'off']));
+        $this->assertSame('https://example.com/', $server->receiveUri(['HTTP_HOST' => 'example.com', 'HTTPS' => 'on']));
+        $this->assertSame('https://example.com/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'HTTPS' => 'on']));
+        $this->assertSame('https://example.com/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'HTTPS' => 'on', 'SERVER_PORT' => 443]));
+        $this->assertSame('https://example.com:4433/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'HTTPS' => 'on', 'SERVER_PORT' => 4433]));
+
+        $this->assertSame('https://example.com/', $server->receiveUri(['HTTP_HOST' => 'example.com', 'HTTPS' => 'on']));
+        $this->assertSame('https://example.com/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'HTTPS' => 'on']));
+        $this->assertSame('https://example.com/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'HTTPS' => 'on', 'SERVER_PORT' => 443]));
+        $this->assertSame('https://example.com:4433/', $server->receiveUri(['SERVER_NAME' => 'example.com', 'HTTPS' => 'on', 'SERVER_PORT' => 4433]));
+
+        $this->assertSame('http://example.com/', $server->receiveUri(['HTTP_HOST' => 'example.com', 'REQUEST_URI' => '/']));
+        $this->assertSame('http://example.com/page?query=string', $server->receiveUri(['HTTP_HOST' => 'example.com', 'REQUEST_URI' => '/page?query=string']));
+    }
+
+    /**
      * Test receive
      *
      * @backupGlobals enabled

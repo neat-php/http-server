@@ -105,18 +105,48 @@ class Server
     }
 
     /**
+     * @param array $server
+     * @return string
+     */
+    public function receiveVersion($server): string
+    {
+        return str_replace('HTTP/', '', $server['SERVER_PROTOCOL'] ?? '1.1');
+    }
+
+    /**
+     * @param array $server
+     * @return string
+     */
+    public function receiveMethod($server): string
+    {
+        return $server['REQUEST_METHOD'] ?? 'GET';
+    }
+
+    /**
+     * @param array $server
+     * @return string
+     */
+    public function receiveUri($server): string
+    {
+        $scheme  = ($server['HTTPS'] ?? null) === 'on' ? 'https' : 'http';
+        $host    = $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? null;
+        $port    = $server['SERVER_PORT'] ?? null;
+        $uri     = $server['REQUEST_URI'] ?? '/';
+        if ($host && $port && strpos($host, ':') === false && $port != ($scheme == 'https' ? 443 : 80)) {
+            $host .= ':' . $port;
+        }
+
+        return "$scheme://$host$uri";
+    }
+
+    /**
      * @return Request
      */
     public function receive(): Request
     {
-        $version = str_replace('HTTP/', '', $_SERVER['SERVER_PROTOCOL'] ?? '1.1');
-        $method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        $scheme  = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $uri     = "$scheme://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-
         $serverRequest = $this->serverRequestFactory
-            ->createServerRequest($method, $uri, $_SERVER)
-            ->withProtocolVersion($version)
+            ->createServerRequest($this->receiveMethod($_SERVER), $this->receiveUri($_SERVER), $_SERVER)
+            ->withProtocolVersion($this->receiveVersion($_SERVER))
             ->withCookieParams($_COOKIE)
             ->withQueryParams($_GET)
             ->withParsedBody($_POST)

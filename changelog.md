@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Required filter will be called even if the value is `null` #3.
+- FilterNotFoundException will be thrown when an unregistered or non-existing function is passed as filter.
+- InvalidArgumentException will be thrown when an invalid arguments is passed to the Input->filter() method.
 
 ## [0.1.6] - 2020-01-30
 ### Fixed

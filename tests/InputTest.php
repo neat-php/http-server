@@ -2,6 +2,8 @@
 
 namespace Neat\Http\Server\Test;
 
+use InvalidArgumentException;
+use Neat\Http\Server\Exception\FilterNotFoundException;
 use Neat\Http\Server\Input;
 use Neat\Http\Server\Request;
 use Neat\Http\Server\Upload;
@@ -10,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
+use stdClass;
 
 class InputTest extends TestCase
 {
@@ -133,6 +136,63 @@ class InputTest extends TestCase
         $this->assertNull($input->filter('unknown', 'trim'));
     }
 
+    public function testRequiredFilter()
+    {
+        /** @var ServerRequestInterface|MockObject $psrRequest */
+        $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
+        $psrRequest->expects($this->any())->method('getQueryParams')->willReturn(['foo' => 'test', 'bar' => null]);
+
+        $input = new Input(new Request($psrRequest), new SessionMock());
+        $input->load('query');
+        /** @var MockObject|CallableMock $requiredFilter */
+        $requiredFilter = $this->createMock(CallableMock::class);
+        $requiredFilter->expects($this->at(0))->method('__invoke')->with('test')->willReturn([]);
+        $requiredFilter->expects($this->at(1))->method('__invoke')->with(null)->willReturn(
+            [':field is een verplicht veld']
+        );
+
+        $input->register('required', $requiredFilter);
+
+        $input->filter('foo', 'required');
+        $this->assertSame([], $input->errors());
+        $this->assertSame(null, $input->error('foo'));
+        $input->filter('bar', 'required');
+        $this->assertSame(['bar' => ':field is een verplicht veld'], $input->errors());
+        $this->assertSame(':field is een verplicht veld', $input->error('bar'));
+    }
+
+    public function testFilterNotFoundException()
+    {
+        /** @var ServerRequestInterface|MockObject $psrRequest */
+        $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
+        $psrRequest->expects($this->any())->method('getQueryParams')->willReturn(['foo' => 'test', 'bar' => null]);
+
+        $input = new Input(new Request($psrRequest), new SessionMock());
+        $input->load('query');
+
+        $this->expectExceptionObject(
+            new FilterNotFoundException("Filter 'required' is not a registered filter or global function")
+        );
+        $input->filter('foo', 'required');
+    }
+
+    public function testInvalidFilterException()
+    {
+        /** @var ServerRequestInterface|MockObject $psrRequest */
+        $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
+        $psrRequest->expects($this->any())->method('getQueryParams')->willReturn(['foo' => 'test', 'bar' => null]);
+
+        $input = new Input(new Request($psrRequest), new SessionMock());
+        $input->load('query');
+
+        $this->expectExceptionObject(
+            new InvalidArgumentException(
+                "Neat\Http\Server\Input::normalizeFilters expects null, string or array as first argument 'object' given"
+            )
+        );
+        $input->filter('foo', new stdClass());
+    }
+
     /**
      * Provide custom filter data
      *
@@ -181,6 +241,24 @@ class InputTest extends TestCase
         $this->assertSame($filtered, $input->filter('var', 'even'));
         $this->assertSame($error, $input->error('var'));
         $this->assertSame(!$error, $input->valid('var'));
+    }
+
+    public function testFiltersWithParameters()
+    {
+        /** @var ServerRequestInterface|MockObject $psrRequest */
+        $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
+        $psrRequest->expects($this->any())->method('getQueryParams')->willReturn(['var' => 'test']);
+
+        $input = new Input(new Request($psrRequest), new SessionMock());
+        $input->load('query');
+        /** @var MockObject|CallableMock $filter */
+        $filter = $this->createMock(CallableMock::class);
+        $filter->expects($this->any())->method('__invoke')->with('test', 'bla')->willReturn([]);
+        $input->register('test', $filter);
+        $this->assertSame('test', $input->filter('var', 'test:bla|trim'));
+        $this->assertSame('test', $input->filter('var', ['test:bla', 'trim']));
+        $this->assertSame('test', $input->filter('var', ['test' => 'bla', 'trim']));
+        $this->assertSame('test', $input->filter('var', ['test' => ['bla'], 'trim']));
     }
 
     /**

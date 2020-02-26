@@ -2,6 +2,8 @@
 
 namespace Neat\Http\Server;
 
+use InvalidArgumentException;
+use Neat\Http\Server\Exception\FilterNotFoundException;
 use RuntimeException;
 
 class Input
@@ -94,10 +96,13 @@ class Input
      */
     public function store()
     {
-        $this->session->set('input', [
-            'data'   => $this->data,
-            'errors' => $this->errors,
-        ]);
+        $this->session->set(
+            'input',
+            [
+                'data'   => $this->data,
+                'errors' => $this->errors,
+            ]
+        );
     }
 
     /**
@@ -168,31 +173,27 @@ class Input
     /**
      * Filter an input variable
      *
-     * @param string       $var
-     * @param string|array $filters
-     * @param string       $type
+     * @param string            $var
+     * @param null|string|array $filters
+     * @param string            $type
      * @return mixed|null
+     * @throws InvalidArgumentException
      */
     public function filter($var, $filters, $type = null)
     {
-        if (!is_array($filters)) {
-            $filters = $filters ? explode('|', $filters) : [];
-        }
+        $filters = $this->normalizeFilters($filters);
 
         $value = &$this->data[$var] ?? null;
+        if (array_key_exists('required', $filters)) {
+            $this->applyFilter($this->getFilter('required'), $var, $filters['required']);
+            unset($filters['required']);
+        }
         if ($value === null) {
             return null;
         }
-        foreach ($filters as $key => $filter) {
-            $params = explode(':', $filter);
-            $filter = is_string($key) ? $key : array_shift($params);
-            $filter = $this->filters[$filter] ??
-                function (&$data) use ($filter, $params) {
-                    $data = $filter($data, ...$params);
-                };
-
-            if ($error = $filter($value, ...$params)) {
-                $this->errors[$var] = is_array($error) ? current($error) : $error;
+        foreach ($filters as $filter => $params) {
+            $filter = $this->getFilter($filter);
+            if (!$this->applyFilter($filter, $var, $params)) {
                 break;
             }
             if ($value === null) {
@@ -205,6 +206,66 @@ class Input
         }
 
         return $value;
+    }
+
+    /**
+     * @param null|string|array<string>|array<string, string> $filters
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    private function normalizeFilters($filters): array
+    {
+        if (!$filters) {
+            return [];
+        }
+        if (!is_string($filters) && !is_array($filters)) {
+            $method = __METHOD__;
+            $type   = gettype($filters);
+            throw new InvalidArgumentException(
+                "{$method} expects null, string or array as first argument '{$type}' given"
+            );
+        }
+        if (is_string($filters)) {
+            $filters = explode('|', $filters);
+        }
+        $normalized = [];
+        foreach ($filters as $key => $filter) {
+            if (is_string($key)) {
+                $normalized[$key] = (array) $filter;
+                continue;
+            }
+            $params              = explode(':', $filter);
+            $filter              = is_string($key) ? $key : array_shift($params);
+            $normalized[$filter] = $params;
+        }
+
+        return $normalized;
+    }
+
+    private function getFilter(string $filter): callable
+    {
+        if (isset($this->filters[$filter])) {
+            return $this->filters[$filter];
+        }
+        if (function_exists($filter)) {
+            return function (&$data, ...$params) use ($filter) {
+                $data = $filter($data, ...$params);
+            };
+        }
+
+        throw new FilterNotFoundException("Filter '$filter' is not a registered filter or global function");
+    }
+
+    private function applyFilter(callable $filter, string $var, array $params): bool
+    {
+        $error = $filter($this->data[$var], ...$params);
+        if ($error) {
+            $this->errors[$var] = is_array($error) ? current($error) : $error;
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

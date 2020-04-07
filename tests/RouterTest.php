@@ -30,6 +30,8 @@ class RouterTest extends TestCase
         $router->delete('/test/test', 'delete-test-test');
         $router->get('/arg/*', 'test-arg');
         $router->any('/any', 'any-test');
+        $router->get('/variadic/...$variadic', 'variadic-test-get');
+        $router->post('/variadic/...$variadic', 'variadic-test-post');
 
         return $router;
     }
@@ -54,6 +56,8 @@ class RouterTest extends TestCase
         $this->assertSame(['bla', '5', 'and', 'more'], $parameters);
         $this->assertSame('any-test', $router->match('GET', '/any'));
         $this->assertSame('any-test', $router->match('POST', '/any'));
+        $this->assertSame('variadic-test-get', $router->match('GET', '/variadic/test'));
+        $this->assertSame('variadic-test-post', $router->match('POST', '/variadic/test'));
     }
 
     public function testAnyVersusGet()
@@ -83,16 +87,25 @@ class RouterTest extends TestCase
         $router = new Router();
         $router->get('/test', 'Test');
         $router->get('/test/...$all', 'TestVariadic');
+        $router->get('/variadic/...$variadic', 'TestVariadicVariadic');
         $router->get('/...$all', 'RootVariadic');
 
-        $this->assertSame('TestVariadic', $router->match('get', '/test', $arguments));
-        $this->assertSame(['all' => []], $arguments);
+        $this->assertSame('Test', $router->match('get', '/test', $arguments));
+        $this->assertSame([], $arguments);
 
         $this->assertSame('TestVariadic', $router->match('get', '/test/first', $arguments));
         $this->assertSame(['all' => ['first']], $arguments);
 
         $this->assertSame('TestVariadic', $router->match('get', '/test/first/second', $arguments));
         $this->assertSame(['all' => ['first', 'second']], $arguments);
+
+        $this->assertSame('RootVariadic', $router->match('get', '/root/first/second', $arguments));
+        $this->assertSame(['all' => ['root', 'first', 'second']], $arguments);
+
+        $router = new Router();
+        $router->get('/variadic/...$variadic', 'TestVariadicVariadic');
+        $this->expectExceptionObject(new RouteNotFoundException('Route not found'));
+        $router->match('GET', '/variadic');
     }
 
     public function testWildcardVersusPartialMatch()

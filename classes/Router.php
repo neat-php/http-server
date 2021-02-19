@@ -19,16 +19,16 @@ class Router
     /** @var string */
     private $expression;
 
-    /** @var Router[] */
+    /** @var static[] */
     private $literals = [];
 
-    /** @var Router[] */
+    /** @var static[] */
     private $variables = [];
 
-    /** @var Router|null */
+    /** @var static|null */
     private $wildcard;
 
-    /** @var string */
+    /** @var static|null */
     private $variadic;
 
     /** @var callable[] */
@@ -48,9 +48,14 @@ class Router
     public function __construct(string $segment = null)
     {
         $this->segment = $segment;
-
-        if ($segment && preg_match('/^\$([^:]+)(?::(.*))?$/', $segment, $match)) {
-            $this->name       = $match[1];
+        if (!$segment) {
+            return;
+        }
+        if (strpos($segment, '...$') === 0) {
+            $this->name = substr($segment, 4);
+        }
+        if (preg_match('/^\$([^:]+)(?::(.*))?$/', $segment, $match)) {
+            $this->name = $match[1];
             $this->expression = isset($match[2]) ? "/^$match[2]$/" : null;
         }
     }
@@ -63,6 +68,16 @@ class Router
     private function isVariable(): bool
     {
         return $this->segment && $this->segment[0] == '$';
+    }
+
+    /**
+     * Is variadic segment?
+     *
+     * @return bool
+     */
+    private function isVariadic(): bool
+    {
+        return $this->segment && strpos($this->segment, '...$') === 0;
     }
 
     /**
@@ -152,9 +167,9 @@ class Router
      *
      * @param string $url
      * @param array  $middleware
-     * @return Router
+     * @return static
      */
-    public function in(string $url, ...$middleware): Router
+    public function in(string $url, ...$middleware): self
     {
         $router = $this->map($this->split($url));
         $router->middleware = $middleware;
@@ -177,29 +192,27 @@ class Router
      * Map path segments
      *
      * @param array $segments
-     * @return Router
+     * @return static
      */
-    private function map(array $segments): Router
+    private function map(array $segments): self
     {
         if (!$segment = array_shift($segments)) {
-            return $this;
-        }
-        if (strpos($segment, '...$') === 0) {
-            $this->variadic = substr($segment, 4);
-
             return $this;
         }
 
         $map = $this->literals[$segment]
             ?? $this->variables[$segment]
+            ?? (strpos($segment, '...$') === 0  ? $this->variadic : null)
             ?? ($segment == '*' ? $this->wildcard : null);
 
         if (!$map) {
-            $map = new Router($segment);
+            $map = new static($segment);
             if ($map->isWildcard()) {
                 $this->wildcard = $map;
             } elseif ($map->isVariable()) {
                 $this->variables[$segment] = $map;
+            } elseif ($map->isVariadic()) {
+                $this->variadic = $map;
             } else {
                 $this->literals[$segment] = $map;
             }
@@ -227,15 +240,11 @@ class Router
      * @param array $segments
      * @param array $arguments
      * @param array $middleware
-     * @return Router|null
+     * @return static|null
      */
     private function matchPath(array $segments, &$arguments = [], &$middleware = [])
     {
         if (!$segments) {
-            if ($this->variadic) {
-                $arguments[$this->variadic] = [];
-            }
-
             return $this;
         }
 
@@ -260,11 +269,12 @@ class Router
                 return $match;
             }
         }
-        if ($this->variadic && $this->methodHandler) {
+        if ($this->variadic && $this->variadic->methodHandler) {
             array_unshift($segments, $segment);
-            $arguments[$this->variadic] = $segments;
+            $arguments[$this->variadic->name] = $segments;
+            array_splice($middleware, 0, 0, $this->variadic->middleware);
 
-            return $this;
+            return $this->variadic;
         }
         if ($this->wildcard && $this->wildcard->methodHandler) {
             array_unshift($segments, $segment);
@@ -309,7 +319,7 @@ class Router
      */
     public function match(string $method, string $path, array &$arguments = null, array &$middleware = null)
     {
-        $arguments  = [];
+        $arguments = [];
         $middleware = $this->middleware;
 
         $map = $this->matchPath($this->split($path), $arguments, $middleware);

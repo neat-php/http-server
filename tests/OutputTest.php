@@ -17,8 +17,8 @@ class OutputTest extends TestCase
     public function testResolveResponse()
     {
         $output = new Output(
-            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
-            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+            $this->createMock(ResponseFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class)
         );
 
         $response = $this->createMock(Response::class);
@@ -36,8 +36,8 @@ class OutputTest extends TestCase
         $factory->expects($this->once())->method('__invoke')->with($object)->willReturn($response);
 
         $output = new Output(
-            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
-            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+            $this->createMock(ResponseFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class)
         );
         $output->register(stdClass::class, $factory);
 
@@ -54,8 +54,8 @@ class OutputTest extends TestCase
         $factory->expects($this->once())->method('__invoke')->with($psrResponse)->willReturn($response);
 
         $output = new Output(
-            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
-            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+            $this->createMock(ResponseFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class)
         );
 
         $output->register(ResponseInterface::class, $factory);
@@ -73,8 +73,8 @@ class OutputTest extends TestCase
         $factory->expects($this->once())->method('__invoke')->with($object)->willReturn($response);
 
         $output = new Output(
-            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
-            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+            $this->createMock(ResponseFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class)
         );
 
         $output->register('object', $factory);
@@ -92,8 +92,8 @@ class OutputTest extends TestCase
         $factory->expects($this->once())->method('__invoke')->with($string)->willReturn($response);
 
         $output = new Output(
-            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
-            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+            $this->createMock(ResponseFactoryInterface::class),
+            $this->createMock(StreamFactoryInterface::class)
         );
 
         $output->register('string', $factory);
@@ -108,6 +108,25 @@ class OutputTest extends TestCase
         $responder->expects($this->once())->method('json')->with([])->willReturn($response);
 
         $this->assertSame($response, $responder->resolve([]));
+    }
+
+    public function testBody()
+    {
+        $output = new Output(
+            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+        );
+
+        $stream = $this->createMock(StreamInterface::class);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
+
+        $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
+
+        $streamFactory->expects($this->once())->method('createStream')->with('CONTENT')->willReturn($stream);
+
+        $this->assertSame($response, $output->body('CONTENT')->psr());
     }
 
     public function testJson()

@@ -83,15 +83,20 @@ class Output
         return $this->json($output);
     }
 
+    public function body(string $content): Response
+    {
+        return $this->response()
+                    ->withBody($this->streamFactory->createStream($content));
+    }
+
     /**
      * @param string $html
      * @return Response
      */
     public function html(string $html): Response
     {
-        return $this->response()
-            ->withContentType('text/html')
-            ->withBody($this->streamFactory->createStream($html));
+        return $this->body($html)
+                    ->withContentType('text/html');
     }
 
     /**
@@ -100,9 +105,8 @@ class Output
      */
     public function json($data): Response
     {
-        return $this->response()
-            ->withContentType('application/json')
-            ->withBody($this->streamFactory->createStream(json_encode($data)));
+        return $this->body(json_encode($data))
+                    ->withContentType('application/json');
     }
 
     /**
@@ -111,9 +115,8 @@ class Output
      */
     public function text(string $text): Response
     {
-        return $this->response()
-            ->withContentType('text/plain')
-            ->withBody($this->streamFactory->createStream($text));
+        return $this->body($text)
+                    ->withContentType('text/plain');
     }
 
     /**

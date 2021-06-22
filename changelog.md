@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- $output->body('content') method to create response messages without a given content type.
 
 ## [0.1.7] - 2020-04-07
 ### Changed
@@ -19,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.5] - 2020-01-14
 ### Added
-- Output sets Content-Length header for files 
+- Output sets Content-Length header for files.
 
 ## [0.1.4] - 2020-01-02
 ### Added
@@ -43,6 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Request implementation (ServerRequestInterface wrapper).
 - Upload implementation (UploadedFileInterface wrapper).
 - Middleware dispatcher.
-- Middleware interface and implementations for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) middleware. 
+- Middleware interface and implementations for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) middleware.
 - Handler interface implementation for closures and [PSR-15](https://www.php-fig.org/psr/psr-15/) handlers.
 - Input, Session and Output helpers.

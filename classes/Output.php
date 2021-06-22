@@ -121,6 +121,16 @@ class Output
     }
 
     /**
+     * @param string $document
+     * @return Response
+     */
+    public function xml(string $document): Response
+    {
+        return $this->body($document)
+                    ->withContentType('text/xml');
+    }
+
+    /**
      * @param string $template
      * @param array  $data
      * @return Response

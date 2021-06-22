@@ -190,6 +190,26 @@ class OutputTest extends TestCase
         $this->assertSame($response, $output->html('<html lang="en"><body>Hello world!</body></html>')->psr());
     }
 
+    public function testXml()
+    {
+        $output = new Output(
+            $responseFactory = $this->createMock(ResponseFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class)
+        );
+
+        $stream = $this->createMock(StreamInterface::class);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
+        $response->expects($this->exactly(2))->method('withHeader')->withConsecutive(['Content-Length', ['66']], ['Content-Type', ['text/xml']])->willReturnSelf();
+
+        $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
+
+        $streamFactory->expects($this->once())->method('createStream')->with('<?xml version="1.0"?><book><title>This is the title</title></book>')->willReturn($stream);
+
+        $this->assertSame($response, $output->xml('<?xml version="1.0"?><book><title>This is the title</title></book>')->psr());
+    }
+
     public function testView()
     {
         $output = new Output(

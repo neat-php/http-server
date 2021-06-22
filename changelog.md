@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - $output->body('content') method to create response messages without a given content type.
+- Add Content-length header by default to responses created using Output methods (body, html, json, text and view).
 
 ## [0.1.7] - 2020-04-07
 ### Changed

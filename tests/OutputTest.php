@@ -121,6 +121,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
+        $response->expects($this->once())->method('withHeader')->with('Content-Length', ['7'])->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -140,7 +141,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['application/json'])->willReturnSelf();
+        $response->expects($this->exactly(2))->method('withHeader')->withConsecutive(['Content-Length', ['15']], ['Content-Type', ['application/json']])->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -160,7 +161,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['text/plain'])->willReturnSelf();
+        $response->expects($this->exactly(2))->method('withHeader')->withConsecutive(['Content-Length', ['12']], ['Content-Type', ['text/plain']])->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -180,7 +181,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['text/html'])->willReturnSelf();
+        $response->expects($this->exactly(2))->method('withHeader')->withConsecutive(['Content-Length', ['48']], ['Content-Type', ['text/html']])->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -203,7 +204,7 @@ class OutputTest extends TestCase
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('withBody')->with($stream)->willReturnSelf();
-        $response->expects($this->once())->method('withHeader')->with('Content-Type', ['text/html'])->willReturnSelf();
+        $response->expects($this->exactly(2))->method('withHeader')->withConsecutive(['Content-Length', ['21']], ['Content-Type', ['text/html']])->willReturnSelf();
 
         $responseFactory->expects($this->once())->method('createResponse')->with()->willReturn($response);
 
@@ -217,7 +218,7 @@ class OutputTest extends TestCase
         $this->assertSame($response, $output->view('view/template', ['message' => 'Hello world!'])->psr());
     }
 
-    public function provideDisposition()
+    public function provideDisposition(): array
     {
         return [
             ['download', 'attachment'],

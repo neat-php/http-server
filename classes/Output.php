@@ -86,7 +86,8 @@ class Output
     public function body(string $content): Response
     {
         return $this->response()
-                    ->withBody($this->streamFactory->createStream($content));
+                    ->withBody($this->streamFactory->createStream($content))
+                    ->withContentLength(strlen($content));
     }
 
     /**

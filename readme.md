@@ -128,17 +128,20 @@ $output  = new Neat\Http\Server\Output($factory, $factory, function (string $tem
     // Use any templating engine you like and return the rendered result as a string
 });
 
-// Then create a simple text response (it will have the proper Content-Type header set)
+// Then create a simple text response (it will have the proper Content-Length and Content-Type header set)
 $response = $output->text('Hello world!');
 
 // Or an html response (with the text/html Content-Type header)
 $response = $output->html('<html lang="en"><body>Hi!</body></html>');
 
-// Change or add headers with any Neat\Http\Response
-$response = $output->html('{key:"value"}')->withContentType('application/json');
+// Us a custom body and add headers afterwards
+$response = $output->body('{key:"value"}')->withContentType('application/json');
 
 // Or just let the output create a JSON response directly
 $response = $output->json(['key' => 'value']);
+
+// There's even XML support
+$response = $output->xml('<document><title>Long live XML</title></document>');
 
 // Rendering a template view is just as easy using the output helper
 $response = $output->view('template', ['message' => 'Hello world!']);
@@ -187,7 +190,7 @@ than a Neat\Http\Response into one.
 $factory = new Example\Factory();
 $output  = new Neat\Http\Server\Output($factory, $factory);
 
-// By default any value that isn't a Neat\Http\Response will be converted to a JSON response  
+// By default any value that isn't a Neat\Http\Response will be converted to a JSON response
 $response = $output->resolve(['What now?' => 'My controller just returned this lousy array.']);
 
 // You can learn the output to handle any type using a Response factory

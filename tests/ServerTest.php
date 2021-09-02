@@ -96,6 +96,39 @@ class ServerTest extends TestCase
         ));
     }
 
+    public function testReceiveAlternateFilesArray()
+    {
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class),
+            $uploadedFileFactory = $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        $stream1 = $this->createMock(StreamInterface::class);
+        $file1   = $this->createMock(UploadedFileInterface::class);
+        $streamFactory->expects($this->at(0))
+            ->method('createStreamFromFile')
+            ->with(__DIR__ . '/test1.txt')
+            ->willReturn($stream1);
+
+        $uploadedFileFactory->expects($this->at(0))
+            ->method('createUploadedFile')
+            ->with($stream1, 123, 0, 'test1.txt', 'text/plain')
+            ->willReturn($file1);
+
+        $expected = ['item' => ['1' => ['img' => $file1]]];
+        $files    = [
+            'item' => [
+                'tmp_name' => ['1' => ['img' => __DIR__ . '/test1.txt']],
+                'name'     => ['1' => ['img' => 'test1.txt']],
+                'size'     => ['1' => ['img' => 123]],
+                'type'     => ['1' => ['img' => 'text/plain']],
+                'error'    => ['1' => ['img' => 0]],
+            ],
+        ];
+        $this->assertEquals($expected, $server->receiveUploadedFiles($files));
+    }
+
     /**
      * Test receiving multiple uploaded files from a non-normalized files array
      */

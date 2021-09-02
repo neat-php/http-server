@@ -66,7 +66,7 @@ class Server
             $multi = true;
             $files = array_map(function ($index) use ($files) {
                 return array_combine(array_keys($files), array_column($files, $index));
-            }, array_keys($files['name']));
+            }, array_combine(array_keys($files['name']), array_keys($files['name'])));
         }
 
         if ($multi) {

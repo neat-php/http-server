@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Multi dimensional files array doesn't maintain structure #12.
+
 ### Added
 - $output->body('content') method to create response messages without a given content type.
 - $output->xml($document) method to create XML responses.

@@ -183,25 +183,18 @@ class Input
     {
         $filters = $this->normalizeFilters($filters);
 
-        $value = &$this->data[$var] ?? null;
-        if (array_key_exists('required', $filters)) {
-            $this->applyFilter($this->getFilter('required'), $var, $filters['required']);
-            unset($filters['required']);
-        }
-        if ($value === null) {
-            return null;
+        $value = null;
+        if (isset($this->data[$var])) {
+            $value =&$this->data[$var];
         }
         foreach ($filters as $filter => $params) {
             $filter = $this->getFilter($filter);
             if (!$this->applyFilter($filter, $var, $params)) {
                 break;
             }
-            if ($value === null) {
-                return null;
-            }
         }
 
-        if ($type) {
+        if ($type && $value !== null) {
             settype($value, $type);
         }
 
@@ -222,7 +215,7 @@ class Input
             $method = __METHOD__;
             $type   = gettype($filters);
             throw new InvalidArgumentException(
-                "{$method} expects null, string or array as first argument '{$type}' given"
+                "$method expects null, string or array as first argument '$type' given"
             );
         }
         if (is_string($filters)) {

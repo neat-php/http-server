@@ -32,7 +32,7 @@
         }
     },
     "require": {
-        "php": ">=7.0",
+        "php": "^7.2 || ^8.0",
         "neat/http": "^0.6.3",
         "psr/http-factory": "^1.0",
         "psr/http-message": "^1.0",
@@ -40,6 +40,6 @@
         "psr/http-server-middleware": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0 !=8.5.0"
+        "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0 != 8.5.0"
     }
 }

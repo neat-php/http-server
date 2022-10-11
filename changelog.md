@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Input->filter() will call all filters even when the value is `null`, filters are required to be null-safe.
+- Minimum PHP version is now 7.2.
 
 ## [0.1.8] - 2021-09-06
 ### Fixed

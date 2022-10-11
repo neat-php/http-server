@@ -23,12 +23,6 @@ class Input
     /** @var string[] */
     protected $errors = [];
 
-    /**
-     * Input constructor
-     *
-     * @param Request $request
-     * @param Session $session
-     */
     public function __construct(Request $request, Session $session)
     {
         $this->request = $request;
@@ -44,9 +38,6 @@ class Input
     {
     }
 
-    /**
-     * @return Request
-     */
     public function request(): Request
     {
         return $this->request;
@@ -121,7 +112,7 @@ class Input
     /**
      * Get all variables
      */
-    public function all()
+    public function all(): array
     {
         return $this->data;
     }
@@ -132,7 +123,7 @@ class Input
      * @param string $var
      * @return bool
      */
-    public function has(string $var)
+    public function has(string $var): bool
     {
         return array_key_exists($var, $this->data);
     }
@@ -175,11 +166,11 @@ class Input
      *
      * @param string            $var
      * @param null|string|array $filters
-     * @param string            $type
+     * @param string|null       $type
      * @return mixed|null
      * @throws InvalidArgumentException
      */
-    public function filter($var, $filters, $type = null)
+    public function filter(string $var, $filters, ?string $type = null)
     {
         $filters = $this->normalizeFilters($filters);
 
@@ -268,7 +259,7 @@ class Input
      * @param string|array $filters
      * @return bool|null
      */
-    public function bool($var, $filters = null)
+    public function bool(string $var, $filters = null): ?bool
     {
         return $this->filter($var, $filters, 'bool');
     }
@@ -280,7 +271,7 @@ class Input
      * @param string|array $filters
      * @return float|null
      */
-    public function float($var, $filters = null)
+    public function float(string $var, $filters = null): ?float
     {
         return $this->filter($var, $filters, 'float');
     }
@@ -292,7 +283,7 @@ class Input
      * @param string|array $filters
      * @return int|null
      */
-    public function int($var, $filters = null)
+    public function int(string $var, $filters = null): ?int
     {
         return $this->filter($var, $filters, 'int');
     }
@@ -304,7 +295,7 @@ class Input
      * @param string|array $filters
      * @return string|null
      */
-    public function string($var, $filters = null)
+    public function string(string $var, $filters = null): ?string
     {
         return $this->filter($var, $filters, 'string');
     }
@@ -316,7 +307,7 @@ class Input
      * @param string|array $filters
      * @return Upload|null
      */
-    public function file($var, $filters = null)
+    public function file(string $var, $filters = null): ?Upload
     {
         if ($this->get($var) instanceof Upload) {
             return $this->filter($var, $filters);
@@ -341,7 +332,7 @@ class Input
      * @param string $field
      * @return string|null
      */
-    public function error(string $field)
+    public function error(string $field): ?string
     {
         return $this->errors[$field] ?? null;
     }
@@ -349,7 +340,7 @@ class Input
     /**
      * Is valid?
      *
-     * @param string $field (optional)
+     * @param string|null $field (optional)
      * @return bool
      */
     public function valid(string $field = null): bool

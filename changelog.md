@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Missing type-hints for the Input class.
+
 ### Changed
 - Input->filter() will call all filters even when the value is `null`, filters are required to be null-safe.
 - Minimum PHP version is now 7.2.

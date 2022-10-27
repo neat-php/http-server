@@ -133,7 +133,7 @@ class InputTest extends TestCase
         $this->assertSame('test', $input->filter('var', 'trim'));
         $this->assertSame('TEST', $input->filter('var', 'trim|strtoupper'));
         $this->assertSame('TEST', $input->filter('var', ['trim', 'strtoupper']));
-        $this->assertNull($input->filter('unknown', 'trim'));
+        $this->assertSame('', $input->filter('unknown', 'trim'));
     }
 
     public function testRequiredFilter()

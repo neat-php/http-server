@@ -174,10 +174,11 @@ class Input
     {
         $filters = $this->normalizeFilters($filters);
 
-        $value = null;
-        if (isset($this->data[$var])) {
-            $value =&$this->data[$var];
+        if (!isset($this->data[$var])) {
+            $this->data[$var] = null;
         }
+        $value =& $this->data[$var];
+
         foreach ($filters as $filter => $params) {
             $filter = $this->getFilter($filter);
             if (!$this->applyFilter($filter, $var, $params)) {

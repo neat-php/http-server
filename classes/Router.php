@@ -157,7 +157,7 @@ class Router
     public function in(string $url, ...$middleware): Router
     {
         $router = $this->map($this->split($url));
-        $router->middleware = $middleware;
+        $router->middleware = array_merge($this->middleware, $middleware);
 
         return $router;
     }

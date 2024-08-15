@@ -469,7 +469,7 @@ class ServerTest extends TestCase
     public function testSendHeader()
     {
         $transmitter = $this->createMock(CallableMock::class);
-        $transmitter->expects($this->once())->method('__invoke')->with('X-Test: value');
+        $transmitter->expects($this->once())->method('__invoke')->with('X-Test: value', true, 200);
 
         $server = new Server(
             $this->createMock(ServerRequestFactoryInterface::class),
@@ -479,7 +479,7 @@ class ServerTest extends TestCase
             $transmitter
         );
 
-        $server->sendHeader('X-Test: value');
+        $server->sendHeader('X-Test: value', true, 200);
     }
 
     public function testSendResponse()

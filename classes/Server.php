@@ -128,10 +128,10 @@ class Server
      */
     public function receiveUri($server): string
     {
-        $scheme  = ($server['HTTPS'] ?? null) === 'on' ? 'https' : 'http';
-        $host    = $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? null;
-        $port    = $server['SERVER_PORT'] ?? null;
-        $uri     = $server['REQUEST_URI'] ?? '/';
+        $scheme = ($server['HTTPS'] ?? null) === 'on' ? 'https' : 'http';
+        $host   = $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? null;
+        $port   = $server['SERVER_PORT'] ?? null;
+        $uri    = $server['REQUEST_URI'] ?? '/';
         if ($host && $port && strpos($host, ':') === false && $port != ($scheme == 'https' ? 443 : 80)) {
             $host .= ':' . $port;
         }
@@ -165,8 +165,8 @@ class Server
      */
     public function send(Response $response)
     {
-        $this->sendHeader($response->statusLine());
         $httpResponseCode = $response->status()->code();
+        $this->sendHeader($response->statusLine(), true, $httpResponseCode);
         foreach ($response->headers() as $header) {
             $replace = $header->name() !== 'Set-Cookie';
             $this->sendHeader($header->line(), $replace, $httpResponseCode);
@@ -176,11 +176,11 @@ class Server
     }
 
     /**
-     * @param string   $line
-     * @param bool     $replace
-     * @param int|null $httpResponseCode
+     * @param string $line
+     * @param bool   $replace
+     * @param int    $httpResponseCode
      */
-    public function sendHeader(string $line, bool $replace = true, int $httpResponseCode = null)
+    public function sendHeader(string $line, bool $replace, int $httpResponseCode)
     {
         ($this->headerTransmitter)($line, $replace, $httpResponseCode);
     }

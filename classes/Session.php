@@ -4,12 +4,8 @@ namespace Neat\Http\Server;
 
 class Session
 {
-    /** @var array */
-    protected $session;
+    protected array $session;
 
-    /**
-     * Session constructor
-     */
     public function __construct()
     {
         if ($this->active()) {
@@ -17,20 +13,12 @@ class Session
         }
     }
 
-    /**
-     * Session active?
-     *
-     * @return bool
-     */
     public function active(): bool
     {
         return session_status() === PHP_SESSION_ACTIVE;
     }
 
-    /**
-     * Start (open) the session
-     */
-    public function start()
+    public function start(): void
     {
         if (!$this->active()) {
             session_start();
@@ -40,42 +28,27 @@ class Session
         }
     }
 
-    /**
-     * Commit (write and close) the session
-     */
-    public function commit()
+    public function commit(): void
     {
         if ($this->active()) {
             session_commit();
         }
     }
 
-    /**
-     * Get session name (cookie name)
-     *
-     * @return string
-     */
-    public function name()
+    public function name(): string
     {
         return session_name();
     }
 
     /**
-     * Get session id (cookie value)
-     *
-     * @return string
+     * @return false|string
      */
     public function id()
     {
         return session_id();
     }
 
-    /**
-     * Get all variables
-     *
-     * @return array
-     */
-    public function all()
+    public function all(): array
     {
         $this->start();
 
@@ -86,9 +59,8 @@ class Session
      * Has variable?
      *
      * @param string|int $var
-     * @return bool
      */
-    public function has($var)
+    public function has($var): bool
     {
         $this->start();
 
@@ -114,7 +86,7 @@ class Session
      * @param string|int $var
      * @param mixed      $value
      */
-    public function set($var, $value)
+    public function set($var, $value): void
     {
         $this->start();
 
@@ -126,7 +98,7 @@ class Session
      *
      * @param string|int $var
      */
-    public function unset($var)
+    public function unset($var): void
     {
         unset($this->session[$var]);
     }

@@ -2,6 +2,7 @@
 
 namespace Neat\Http\Server;
 
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -10,33 +11,23 @@ use Psr\Http\Message\ServerRequestInterface;
 class Request extends \Neat\Http\Request
 {
     /** @var ServerRequestInterface */
-    protected $message;
+    protected MessageInterface $message;
 
-    /**
-     * Request constructor
-     *
-     * @param ServerRequestInterface $request
-     */
     public function __construct(ServerRequestInterface $request)
     {
         parent::__construct($request);
     }
 
-    /**
-     * @return ServerRequestInterface
-     */
-    public function psr()
+    public function psr(): ServerRequestInterface
     {
         return $this->message;
     }
 
     /**
      * Get query (aka GET) parameter(s)
-     *
-     * @param string $var
      * @return mixed
      */
-    public function query($var = null)
+    public function query(?string $var = null)
     {
         if ($var === null) {
             return $this->message->getQueryParams();
@@ -47,11 +38,9 @@ class Request extends \Neat\Http\Request
 
     /**
      * Get parsed body (aka POST) parameter(s)
-     *
-     * @param string $var
      * @return mixed
      */
-    public function post($var = null)
+    public function post(?string $var = null)
     {
         if ($var === null) {
             return $this->message->getParsedBody();
@@ -93,11 +82,9 @@ class Request extends \Neat\Http\Request
 
     /**
      * Get cookie parameter(s)
-     *
-     * @param string $name
      * @return mixed
      */
-    public function cookie($name = null)
+    public function cookie(?string $name = null)
     {
         if ($name === null) {
             return $this->message->getCookieParams();
@@ -107,10 +94,9 @@ class Request extends \Neat\Http\Request
     }
 
     /**
-     * @param string $name
      * @return mixed
      */
-    public function server(string $name = null)
+    public function server(?string $name = null)
     {
         if ($name === null) {
             return $this->message->getServerParams();
@@ -119,18 +105,12 @@ class Request extends \Neat\Http\Request
         return $this->message->getServerParams()[$name] ?? null;
     }
 
-    /**
-     * @return string|null
-     */
-    public function clientIp()
+    public function clientIp(): ?string
     {
         return $this->server('REMOTE_ADDR');
     }
 
     /**
-     * Get new request with query parameters
-     *
-     * @param array $query
      * @return static
      */
     public function withQuery(array $query)
@@ -144,9 +124,7 @@ class Request extends \Neat\Http\Request
     }
 
     /**
-     * Get new request with uploaded files
-     *
-     * @param Upload[]|Upload[][]|... $files
+     * @param Upload[]|Upload[][] $files
      * @return static
      */
     public function withFiles(array $files)
@@ -163,13 +141,9 @@ class Request extends \Neat\Http\Request
     }
 
     /**
-     * Get new request with cookie parameter
-     *
-     * @param string $name
-     * @param string $value
      * @return static
      */
-    public function withCookie($name, $value)
+    public function withCookie(string $name, ?string $value)
     {
         $new = clone $this;
         if ($value !== null) {

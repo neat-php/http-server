@@ -191,7 +191,6 @@ class ServerTest extends TestCase
             $this->createMock(UploadedFileFactoryInterface::class)
         );
 
-        $this->assertNull($server->receiveUploadedFiles(null));
         $this->assertSame([], $server->receiveUploadedFiles(['avatar' => 1]));
     }
 
@@ -212,7 +211,6 @@ class ServerTest extends TestCase
         $streamFactory->expects($this->once())->method('createStream')->with('')->willReturn($stream);
         $uploadedFileFactory->expects($this->once())->method('createUploadedFile')->with($stream, 0, 4, '', '')->willReturn($upload);
 
-        $this->assertNull($server->receiveUploadedFiles(null));
         $this->assertSame(['empty' => $upload], $server->receiveUploadedFiles([
             'empty' => [
                 'name'     => '',

@@ -11,33 +11,21 @@ use RuntimeException;
 
 class Output
 {
-    /** @var ResponseFactoryInterface */
-    private $responseFactory;
-
-    /** @var StreamFactoryInterface */
-    private $streamFactory;
-
-    /** @var callable */
+    private ResponseFactoryInterface $responseFactory;
+    private StreamFactoryInterface $streamFactory;
+    /** @var callable|null */
     private $viewRenderer;
-
     /** @var callable[] */
-    private $factories;
+    private array $factories = [];
 
-    /**
-     * Responder constructor
-     *
-     * @param ResponseFactoryInterface $responseFactory
-     * @param StreamFactoryInterface   $streamFactory
-     * @param callable                 $viewRenderer
-     */
     public function __construct(
         ResponseFactoryInterface $responseFactory,
         StreamFactoryInterface $streamFactory,
-        callable $viewRenderer = null
+        ?callable $viewRenderer = null
     ) {
         $this->responseFactory = $responseFactory;
-        $this->streamFactory   = $streamFactory;
-        $this->viewRenderer    = $viewRenderer;
+        $this->streamFactory = $streamFactory;
+        $this->viewRenderer = $viewRenderer;
 
         $this->register(Response::class, function (Response $response) {
             return $response;
@@ -45,10 +33,10 @@ class Output
     }
 
     /**
-     * @param $output
-     * @return Generator|string[]
+     * @param mixed $output
+     * @return Generator<void, array-key, string, void>
      */
-    private function types($output)
+    private function types($output): iterable
     {
         if (is_object($output)) {
             yield get_class($output);
@@ -59,18 +47,13 @@ class Output
         yield gettype($output);
     }
 
-    /**
-     * @param string   $type
-     * @param callable $factory
-     */
-    public function register(string $type, callable $factory)
+    public function register(string $type, callable $factory): void
     {
         $this->factories[$type] = $factory;
     }
 
     /**
      * @param mixed $output
-     * @return Response
      */
     public function resolve($output): Response
     {
@@ -85,56 +68,43 @@ class Output
 
     public function body(string $content): Response
     {
-        return $this->response()
-                    ->withBody($this->streamFactory->createStream($content))
-                    ->withContentLength(strlen($content));
+        return $this
+            ->response()
+            ->withBody($this->streamFactory->createStream($content))
+            ->withContentLength(strlen($content));
     }
 
-    /**
-     * @param string $html
-     * @return Response
-     */
     public function html(string $html): Response
     {
-        return $this->body($html)
-                    ->withContentType('text/html');
+        return $this
+            ->body($html)
+            ->withContentType('text/html');
     }
 
     /**
      * @param mixed $data
-     * @return Response
      */
     public function json($data): Response
     {
-        return $this->body(json_encode($data))
-                    ->withContentType('application/json');
+        return $this
+            ->body(json_encode($data))
+            ->withContentType('application/json');
     }
 
-    /**
-     * @param string $text
-     * @return Response
-     */
     public function text(string $text): Response
     {
-        return $this->body($text)
-                    ->withContentType('text/plain');
+        return $this
+            ->body($text)
+            ->withContentType('text/plain');
     }
 
-    /**
-     * @param string $document
-     * @return Response
-     */
     public function xml(string $document): Response
     {
-        return $this->body($document)
-                    ->withContentType('text/xml');
+        return $this
+            ->body($document)
+            ->withContentType('text/xml');
     }
 
-    /**
-     * @param string $template
-     * @param array  $data
-     * @return Response
-     */
     public function view(string $template, array $data = []): Response
     {
         return $this->html(($this->viewRenderer)($template, $data));
@@ -142,12 +112,8 @@ class Output
 
     /**
      * @param string|resource $file
-     * @param string          $disposition
-     * @param string|null     $filename
-     * @param string|null     $type
-     * @return Response
      */
-    private function file($file, string $disposition, string $filename = null, string $type = null): Response
+    private function file($file, string $disposition, ?string $filename = null, ?string $type = null): Response
     {
         if (is_string($file)) {
             $body = $this->streamFactory->createStreamFromFile($file);
@@ -156,8 +122,9 @@ class Output
         } else {
             throw new RuntimeException('File must be a valid string or resource');
         }
-        $size     = $body->getSize();
-        $response = $this->response()
+        $size = $body->getSize();
+        $response = $this
+            ->response()
             ->withContentDisposition($disposition, $filename)
             ->withContentType($type)
             ->withBody($body);
@@ -170,39 +137,25 @@ class Output
 
     /**
      * @param string|resource $file
-     * @param string|null     $filename
-     * @param string|null     $type
-     * @return Response
      */
-    public function download($file, string $filename = null, string $type = null): Response
+    public function download($file, ?string $filename = null, ?string $type = null): Response
     {
         return $this->file($file, ContentDisposition::ATTACHMENT, $filename, $type ?? 'application/octet-stream');
     }
 
     /**
      * @param string|resource $file
-     * @param string|null     $filename
-     * @param string|null     $type
-     * @return Response
      */
-    public function display($file, string $filename = null, string $type = null): Response
+    public function display($file, ?string $filename = null, ?string $type = null): Response
     {
         return $this->file($file, ContentDisposition::INLINE, $filename, $type ?? 'application/octet-stream');
     }
 
-    /**
-     * @param int    $code
-     * @param string $reason
-     * @return Response
-     */
     public function response(int $code = 200, string $reason = ''): Response
     {
         return new Response($this->responseFactory->createResponse($code, $reason));
     }
 
-    /**
-     * @return Output\Redirect
-     */
     public function redirect(): Output\Redirect
     {
         return new Output\Redirect($this->responseFactory);

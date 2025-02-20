@@ -11,54 +11,33 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class Server
 {
-    /** @var ServerRequestFactoryInterface */
-    private $serverRequestFactory;
-
-    /** @var StreamFactoryInterface */
-    private $streamFactory;
-
-    /** @var UploadedFileFactoryInterface */
-    private $uploadedFileFactory;
-
+    private ServerRequestFactoryInterface $serverRequestFactory;
+    private StreamFactoryInterface $streamFactory;
+    private UploadedFileFactoryInterface $uploadedFileFactory;
     /** @var callable */
     private $headerReceiver;
-
     /** @var callable */
     private $headerTransmitter;
 
-    /**
-     * Server constructor
-     *
-     * @param ServerRequestFactoryInterface $serverRequestFactory
-     * @param StreamFactoryInterface        $streamFactory
-     * @param UploadedFileFactoryInterface  $uploadedFileFactory
-     * @param callable|null                 $headerReceiver
-     * @param callable|null                 $headerTransmitter
-     */
     public function __construct(
         ServerRequestFactoryInterface $serverRequestFactory,
         StreamFactoryInterface $streamFactory,
         UploadedFileFactoryInterface $uploadedFileFactory,
-        callable $headerReceiver = null,
-        callable $headerTransmitter = null
+        ?callable $headerReceiver = null,
+        ?callable $headerTransmitter = null
     ) {
         $this->serverRequestFactory = $serverRequestFactory;
-        $this->streamFactory        = $streamFactory;
-        $this->uploadedFileFactory  = $uploadedFileFactory;
-        $this->headerReceiver       = $headerReceiver ?? 'getallheaders';
-        $this->headerTransmitter    = $headerTransmitter ?? 'header';
+        $this->streamFactory = $streamFactory;
+        $this->uploadedFileFactory = $uploadedFileFactory;
+        $this->headerReceiver = $headerReceiver ?? 'getallheaders';
+        $this->headerTransmitter = $headerTransmitter ?? 'header';
     }
 
     /**
-     * @param array $files
      * @return null|UploadedFileInterface|UploadedFileInterface[]|UploadedFileInterface[][]|...
      */
-    public function receiveUploadedFiles($files)
+    public function receiveUploadedFiles(array $files)
     {
-        if (!is_array($files)) {
-            return null;
-        }
-
         $keys = array_keys($files);
         sort($keys);
         $multi = $keys !== ['error', 'name', 'size', 'tmp_name', 'type'];
@@ -70,33 +49,34 @@ class Server
         }
 
         if ($multi) {
-            return array_filter(array_map([$this, 'receiveUploadedFiles'], $files));
+            $normalized = [];
+            foreach ($files as $key => $file) {
+                if (!is_array($file)) {
+                    continue;
+                }
+                $normalized[$key] = $this->receiveUploadedFiles($file);
+            }
+            return array_filter($normalized);
         }
 
         $stream = $files['error']
-                ? $this->streamFactory->createStream('')
-                : $this->streamFactory->createStreamFromFile($files['tmp_name']);
+            ? $this->streamFactory->createStream('')
+            : $this->streamFactory->createStreamFromFile($files['tmp_name']);
 
         return $this->uploadedFileFactory->createUploadedFile(
             $stream,
             $files['size'],
             $files['error'],
             $files['name'],
-            $files['type']
+            $files['type'],
         );
     }
 
-    /**
-     * @return array
-     */
     public function receiveHeaders(): array
     {
         return ($this->headerReceiver)();
     }
 
-    /**
-     * @return StreamInterface
-     */
     public function receiveBody(): StreamInterface
     {
         $handle = defined('STDIN') ? constant('STDIN') : fopen('php://input', 'r+');
@@ -104,34 +84,22 @@ class Server
         return $this->streamFactory->createStreamFromResource($handle);
     }
 
-    /**
-     * @param array $server
-     * @return string
-     */
-    public function receiveVersion($server): string
+    public function receiveVersion(array $server): string
     {
         return str_replace('HTTP/', '', $server['SERVER_PROTOCOL'] ?? '1.1');
     }
 
-    /**
-     * @param array $server
-     * @return string
-     */
-    public function receiveMethod($server): string
+    public function receiveMethod(array $server): string
     {
         return $server['REQUEST_METHOD'] ?? 'GET';
     }
 
-    /**
-     * @param array $server
-     * @return string
-     */
-    public function receiveUri($server): string
+    public function receiveUri(array $server): string
     {
         $scheme = ($server['HTTPS'] ?? null) === 'on' ? 'https' : 'http';
-        $host   = $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? null;
-        $port   = $server['SERVER_PORT'] ?? null;
-        $uri    = $server['REQUEST_URI'] ?? '/';
+        $host = $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? null;
+        $port = $server['SERVER_PORT'] ?? null;
+        $uri = $server['REQUEST_URI'] ?? '/';
         if ($host && $port && strpos($host, ':') === false && $port != ($scheme == 'https' ? 443 : 80)) {
             $host .= ':' . $port;
         }
@@ -139,9 +107,6 @@ class Server
         return "$scheme://$host$uri";
     }
 
-    /**
-     * @return Request
-     */
     public function receive(): Request
     {
         $serverRequest = $this->serverRequestFactory
@@ -160,10 +125,7 @@ class Server
         return new Request($serverRequest);
     }
 
-    /**
-     * @param Response $response
-     */
-    public function send(Response $response)
+    public function send(Response $response): void
     {
         $httpResponseCode = $response->status()->code();
         $this->sendHeader($response->statusLine(), true, $httpResponseCode);
@@ -175,20 +137,12 @@ class Server
         $this->sendBody($response->bodyStream());
     }
 
-    /**
-     * @param string $line
-     * @param bool   $replace
-     * @param int    $httpResponseCode
-     */
-    public function sendHeader(string $line, bool $replace, int $httpResponseCode)
+    public function sendHeader(string $line, bool $replace, int $httpResponseCode): void
     {
         ($this->headerTransmitter)($line, $replace, $httpResponseCode);
     }
 
-    /**
-     * @param StreamInterface $stream
-     */
-    public function sendBody(StreamInterface $stream)
+    public function sendBody(StreamInterface $stream): void
     {
         if ($stream->isSeekable()) {
             $stream->rewind();

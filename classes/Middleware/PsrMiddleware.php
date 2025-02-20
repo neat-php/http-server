@@ -10,32 +10,18 @@ use Psr\Http\Server\MiddlewareInterface;
 
 class PsrMiddleware implements Middleware
 {
-    /** @var MiddlewareInterface */
-    private $middleware;
+    private MiddlewareInterface $middleware;
 
-    /**
-     * Middleware constructor
-     *
-     * @param MiddlewareInterface $middleware
-     */
     public function __construct(MiddlewareInterface $middleware)
     {
         $this->middleware = $middleware;
     }
 
-    /**
-     * @return MiddlewareInterface
-     */
     public function psr(): MiddlewareInterface
     {
         return $this->middleware;
     }
 
-    /**
-     * @param Request $request
-     * @param Handler $handler
-     * @return Response
-     */
     public function process(Request $request, Handler $handler): Response
     {
         $psrHandler

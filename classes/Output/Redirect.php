@@ -24,42 +24,27 @@ use RuntimeException;
  */
 class Redirect
 {
-    const CODES = [
-        'multipleChoices'   => 300,
-        'movedPermanently'  => 301,
-        'found'             => 302,
-        'seeOther'          => 303,
-        'notModified'       => 304,
-        'useProxy'          => 305,
+    public const CODES = [
+        'multipleChoices' => 300,
+        'movedPermanently' => 301,
+        'found' => 302,
+        'seeOther' => 303,
+        'notModified' => 304,
+        'useProxy' => 305,
         'temporaryRedirect' => 307,
         'permanentRedirect' => 308,
     ];
 
-    /** @var ResponseFactoryInterface */
-    private $responseFactory;
+    private ResponseFactoryInterface $responseFactory;
+    private bool $permanent = false;
+    private bool $resubmit = false;
 
-    /** @var bool */
-    private $permanent = false;
-
-    /** @var bool */
-    private $resubmit = false;
-
-    /**
-     * Redirect constructor
-     *
-     * @param ResponseFactoryInterface $responseFactory
-     */
     public function __construct(ResponseFactoryInterface $responseFactory)
     {
         $this->responseFactory = $responseFactory;
     }
 
-    /**
-     * @param string $name
-     * @param array  $arguments
-     * @return Response
-     */
-    public function __call(string $name, array $arguments)
+    public function __call(string $name, array $arguments): Response
     {
         if ($code = self::CODES[$name] ?? null) {
             $response = $this->response($code);
@@ -71,7 +56,6 @@ class Redirect
     }
 
     /**
-     * @param bool $permanent
      * @return $this
      */
     public function permanent(bool $permanent = true): Redirect
@@ -82,7 +66,6 @@ class Redirect
     }
 
     /**
-     * @param bool $resubmit
      * @return $this
      */
     public function resubmit(bool $resubmit = true): Redirect
@@ -92,9 +75,6 @@ class Redirect
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function code(): int
     {
         if ($this->resubmit) {
@@ -104,32 +84,18 @@ class Redirect
         }
     }
 
-    /**
-     * @param int    $code
-     * @param string $reason
-     * @return Response
-     */
-    public function response(int $code = null, string $reason = null): Response
+    public function response(?int $code = null, ?string $reason = null): Response
     {
         $status = new Status($code ?? $this->code(), $reason);
 
         return new Response($this->responseFactory->createResponse($status->code(), $status->reason()));
     }
 
-    /**
-     * @param string $url
-     * @return Response
-     */
     public function to(string $url): Response
     {
         return $this->response()->withHeader('Location', $url);
     }
 
-    /**
-     * @param Request $request
-     * @param string  $fallback
-     * @return Response
-     */
     public function back(Request $request, string $fallback = '/'): Response
     {
         $referer = $request->header('Referer');
@@ -137,19 +103,11 @@ class Redirect
         return $this->to($referer ? $referer->value() : $fallback);
     }
 
-    /**
-     * @param Request $request
-     * @return Response
-     */
     public function refresh(Request $request): Response
     {
         return $this->to($request->url());
     }
 
-    /**
-     * @param Input $input
-     * @return Response
-     */
     public function retry(Input $input): Response
     {
         $input->store();

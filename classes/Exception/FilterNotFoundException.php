@@ -2,7 +2,4 @@
 
 namespace Neat\Http\Server\Exception;
 
-class FilterNotFoundException extends \LogicException
-{
-
-}
+class FilterNotFoundException extends \LogicException {}

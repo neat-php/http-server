@@ -7,33 +7,19 @@ use RuntimeException;
 
 class Upload
 {
-    /** @var UploadedFileInterface */
-    protected $file;
+    protected UploadedFileInterface $file;
 
-    /**
-     * File constructor
-     *
-     * @param UploadedFileInterface $file
-     */
     public function __construct(UploadedFileInterface $file)
     {
         $this->file = $file;
     }
 
-    /**
-     * @return UploadedFileInterface
-     */
     public function psr(): UploadedFileInterface
     {
         return $this->file;
     }
 
-    /**
-     * Move file to destination
-     *
-     * @param string $destination Full destination path including filename
-     */
-    public function moveTo($destination)
+    public function moveTo(string $destination): void
     {
         if (!$this->ok()) {
             throw new RuntimeException('Cannot move invalid file upload');
@@ -44,74 +30,31 @@ class Upload
         $this->file->moveTo($destination);
     }
 
-    /**
-     * Is this upload moved already?
-     *
-     * @return bool
-     * @deprecated
-     */
-    public function moved()
-    {
-        trigger_error('Method:' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
-
-        return !$this->file->getStream()->isReadable();
-    }
-
-    /**
-     * Get path to file
-     *
-     * @return string
-     */
-    public function path()
+    public function path(): string
     {
         return $this->file->getStream()->getMetadata()['uri'];
     }
 
-    /**
-     * Get file size
-     *
-     * @return int|null
-     */
-    public function size()
+    public function size(): ?int
     {
         return $this->file->getSize();
     }
 
-    /**
-     * Get file name according to the client (unsafe!)
-     *
-     * @return string|null
-     */
-    public function clientName()
+    public function clientName(): ?string
     {
         return $this->file->getClientFilename();
     }
 
-    /**
-     * Get file type according to the client (unsafe!)
-     *
-     * @return string|null
-     */
-    public function clientType()
+    public function clientType(): ?string
     {
         return $this->file->getClientMediaType();
     }
 
-    /**
-     * Get upload error code (one of the UPLOAD_ERR_* constants)
-     *
-     * @return int
-     */
     public function error(): int
     {
         return $this->file->getError();
     }
 
-    /**
-     * Upload ok?
-     *
-     * @return bool
-     */
     public function ok(): bool
     {
         return $this->file->getError() === UPLOAD_ERR_OK;

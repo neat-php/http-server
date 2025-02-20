@@ -6,33 +6,25 @@ use Neat\Http\Server\Session;
 
 class SessionMock extends Session
 {
-    private $active = false;
+    private bool $active = false;
 
     /**
-     * SessionMock constructor
-     *
-     * @param array $session
      * @noinspection PhpMissingParentConstructorInspection
      */
-    public function __construct(&$session = null)
+    public function __construct(?array &$session = null)
     {
-        $this->session = &$session ?? [];
+        $this->session = [];
+        if ($session !== null) {
+            $this->session = &$session;
+        }
     }
 
-    /**
-     * Session active?
-     *
-     * @return bool
-     */
     public function active(): bool
     {
         return $this->active;
     }
 
-    /**
-     * Start (open) the session
-     */
-    public function start()
+    public function start(): void
     {
         $this->active = true;
     }

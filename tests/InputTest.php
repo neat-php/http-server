@@ -16,10 +16,7 @@ use stdClass;
 
 class InputTest extends TestCase
 {
-    /**
-     * Test empty input
-     */
-    public function testEmpty()
+    public function testEmpty(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -41,10 +38,7 @@ class InputTest extends TestCase
         $this->assertTrue($input->valid('unknown'));
     }
 
-    /**
-     * Test input from various source configurations
-     */
-    public function testFrom()
+    public function testFrom(): void
     {
         /** @var UploadedFileInterface|MockObject $psrUpload */
         $psrUpload = $this->getMockForAbstractClass(UploadedFileInterface::class);
@@ -71,10 +65,7 @@ class InputTest extends TestCase
         $this->assertEquals(['var' => new Upload($psrUpload)], $input->all());
     }
 
-    /**
-     * Test set value
-     */
-    public function testSet()
+    public function testSet(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -87,10 +78,7 @@ class InputTest extends TestCase
         $this->assertSame('value', $input->get('var'));
     }
 
-    /**
-     * Test from empty sources
-     */
-    public function testFromEmpty()
+    public function testFromEmpty(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -102,10 +90,7 @@ class InputTest extends TestCase
         $input->load();
     }
 
-    /**
-     * Test from unknown sources
-     */
-    public function testFromUnknown()
+    public function testFromUnknown(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -117,10 +102,7 @@ class InputTest extends TestCase
         $input->load('internet');
     }
 
-    /**
-     * Test input filtering
-     */
-    public function testFilter()
+    public function testFilter(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -133,10 +115,11 @@ class InputTest extends TestCase
         $this->assertSame('test', $input->filter('var', 'trim'));
         $this->assertSame('TEST', $input->filter('var', 'trim|strtoupper'));
         $this->assertSame('TEST', $input->filter('var', ['trim', 'strtoupper']));
-        $this->assertSame('', $input->filter('unknown', 'trim'));
+        require_once 'trim.php';
+        $this->assertSame(null, $input->filter('unknown', '\Neat\Http\Server\Test\trim'));
     }
 
-    public function testRequiredFilter()
+    public function testRequiredFilter(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -147,9 +130,8 @@ class InputTest extends TestCase
         /** @var MockObject|CallableMock $requiredFilter */
         $requiredFilter = $this->createMock(CallableMock::class);
         $requiredFilter->expects($this->at(0))->method('__invoke')->with('test')->willReturn([]);
-        $requiredFilter->expects($this->at(1))->method('__invoke')->with(null)->willReturn(
-            [':field is een verplicht veld']
-        );
+        $requiredFilter
+            ->expects($this->at(1))->method('__invoke')->with(null)->willReturn([':field is een verplicht veld']);
 
         $input->register('required', $requiredFilter);
 
@@ -161,7 +143,7 @@ class InputTest extends TestCase
         $this->assertSame(':field is een verplicht veld', $input->error('bar'));
     }
 
-    public function testFilterNotFoundException()
+    public function testFilterNotFoundException(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -171,12 +153,12 @@ class InputTest extends TestCase
         $input->load('query');
 
         $this->expectExceptionObject(
-            new FilterNotFoundException("Filter 'required' is not a registered filter or global function")
+            new FilterNotFoundException("Filter 'required' is not a registered filter or global function"),
         );
         $input->filter('foo', 'required');
     }
 
-    public function testInvalidFilterException()
+    public function testInvalidFilterException(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -187,18 +169,14 @@ class InputTest extends TestCase
 
         $this->expectExceptionObject(
             new InvalidArgumentException(
-                "Neat\Http\Server\Input::normalizeFilters expects null, string or array as first argument 'object' given"
-            )
+                "Neat\Http\Server\Input::normalizeFilters expects null, string or array as first argument 'object' given",
+            ),
         );
+        /** @noinspection PhpParamsInspection */
         $input->filter('foo', new stdClass());
     }
 
-    /**
-     * Provide custom filter data
-     *
-     * @return array
-     */
-    public function provideCustomFilterData()
+    public function provideCustomFilterData(): array
     {
         return [
             ['test', 'test', 'Not a number'],
@@ -208,14 +186,10 @@ class InputTest extends TestCase
     }
 
     /**
-     * Test custom filter
-     *
      * @dataProvider provideCustomFilterData
-     * @param string      $value
-     * @param mixed       $filtered
-     * @param string|null $error
+     * @param mixed $filtered
      */
-    public function testCustomFilter($value, $filtered, $error)
+    public function testCustomFilter(string $value, $filtered, ?string $error): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -243,7 +217,7 @@ class InputTest extends TestCase
         $this->assertSame(!$error, $input->valid('var'));
     }
 
-    public function testFiltersWithParameters()
+    public function testFiltersWithParameters(): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -261,12 +235,7 @@ class InputTest extends TestCase
         $this->assertSame('test', $input->filter('var', ['test' => ['bla'], 'trim']));
     }
 
-    /**
-     * Provide type data
-     *
-     * @return array
-     */
-    public function provideTypeData()
+    public function provideTypeData(): array
     {
         return [
             ['bool', null, null],
@@ -297,14 +266,10 @@ class InputTest extends TestCase
     }
 
     /**
-     * Test type casted input
-     *
-     * @param string $type
-     * @param string $value
-     * @param bool   $filtered
      * @dataProvider provideTypeData
+     * @param bool|int|null|string $filtered
      */
-    public function testTypeCast($type, $value, $filtered)
+    public function testTypeCast(string $type, ?string $value, $filtered): void
     {
         /** @var ServerRequestInterface|MockObject $psrRequest */
         $psrRequest = $this->getMockForAbstractClass(ServerRequestInterface::class);
@@ -316,10 +281,7 @@ class InputTest extends TestCase
         $this->assertSame($filtered, $input->$type('var'));
     }
 
-    /**
-     * Test file input
-     */
-    public function testFile()
+    public function testFile(): void
     {
         /** @var UploadedFileInterface|MockObject $psrUpload */
         $psrUpload = $this->getMockForAbstractClass(UploadedFileInterface::class);

@@ -10,66 +10,37 @@ use Neat\Http\Exception\RouteNotFoundException;
  */
 class Router
 {
-    /** @var string|null */
-    private $segment;
-
-    /** @var string */
-    private $name;
-
-    /** @var string */
-    private $expression;
-
+    private ?string $segment;
+    private ?string $name = null;
+    private ?string $expression = null;
     /** @var Router[] */
-    private $literals = [];
-
+    private array $literals = [];
     /** @var Router[] */
-    private $variables = [];
+    private array $variables = [];
+    private ?Router $wildcard = null;
+    private ?string $variadic = null;
+    /** @var array<callable|string> */
+    private array $methodHandler = [];
+    /** @var array<callable|string> */
+    private array $methodMiddleware = [];
+    /** @var array<callable|string> */
+    private array $middleware = [];
 
-    /** @var Router|null */
-    private $wildcard;
-
-    /** @var string */
-    private $variadic;
-
-    /** @var callable[] */
-    private $methodHandler = [];
-
-    /** @var array */
-    private $methodMiddleware = [];
-
-    /** @var array */
-    private $middleware = [];
-
-    /**
-     * Router constructor
-     *
-     * @param string $segment
-     */
-    public function __construct(string $segment = null)
+    public function __construct(?string $segment = null)
     {
         $this->segment = $segment;
 
         if ($segment && preg_match('/^\$([^:]+)(?::(.*))?$/', $segment, $match)) {
-            $this->name       = $match[1];
+            $this->name = $match[1];
             $this->expression = isset($match[2]) ? "/^$match[2]$/" : null;
         }
     }
 
-    /**
-     * Is variable segment?
-     *
-     * @return bool
-     */
     private function isVariable(): bool
     {
         return $this->segment && $this->segment[0] == '$';
     }
 
-    /**
-     * Is wildcard segment?
-     *
-     * @return bool
-     */
     private function isWildcard(): bool
     {
         return $this->segment == '*';
@@ -78,11 +49,10 @@ class Router
     /**
      * Add GET route
      *
-     * @param string   $url
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param callable|string $middleware
      */
-    public function get(string $url, $handler, ...$middleware)
+    public function get(string $url, $handler, ...$middleware): void
     {
         $this->map($this->split($url))->method('GET', $handler, $middleware);
     }
@@ -90,11 +60,10 @@ class Router
     /**
      * Add POST route
      *
-     * @param string   $url
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param callable|string $middleware
      */
-    public function post(string $url, $handler, ...$middleware)
+    public function post(string $url, $handler, ...$middleware): void
     {
         $this->map($this->split($url))->method('POST', $handler, $middleware);
     }
@@ -102,11 +71,10 @@ class Router
     /**
      * Add PUT route
      *
-     * @param string   $url
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param callable|string $middleware
      */
-    public function put(string $url, $handler, ...$middleware)
+    public function put(string $url, $handler, ...$middleware): void
     {
         $this->map($this->split($url))->method('PUT', $handler, $middleware);
     }
@@ -114,11 +82,10 @@ class Router
     /**
      * Add PATCH route
      *
-     * @param string   $url
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param callable|string $middleware
      */
-    public function patch(string $url, $handler, ...$middleware)
+    public function patch(string $url, $handler, ...$middleware): void
     {
         $this->map($this->split($url))->method('PATCH', $handler, $middleware);
     }
@@ -126,11 +93,10 @@ class Router
     /**
      * Add DELETE route
      *
-     * @param string   $url
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param callable|string $middleware
      */
-    public function delete(string $url, $handler, ...$middleware)
+    public function delete(string $url, $handler, ...$middleware): void
     {
         $this->map($this->split($url))->method('DELETE', $handler, $middleware);
     }
@@ -138,11 +104,10 @@ class Router
     /**
      * Add a controller route
      *
-     * @param string   $url
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param callable|string $middleware
      */
-    public function any(string $url, $handler, ...$middleware)
+    public function any(string $url, $handler, ...$middleware): void
     {
         $this->map($this->split($url))->method('ANY', $handler, $middleware);
     }
@@ -151,7 +116,7 @@ class Router
      * Get a sub-router
      *
      * @param string $url
-     * @param array  $middleware
+     * @param callable|string $middleware
      * @return Router
      */
     public function in(string $url, ...$middleware): Router
@@ -211,25 +176,23 @@ class Router
     /**
      * Set method handler and middleware
      *
-     * @param string   $method
-     * @param callable $handler
-     * @param array    $middleware
+     * @param callable|string $handler
+     * @param array<callable|string> $middleware
      */
-    private function method(string $method, $handler, $middleware)
+    private function method(string $method, $handler, array $middleware): void
     {
-        $this->methodHandler[$method]    = $handler;
+        $this->methodHandler[$method] = $handler;
         $this->methodMiddleware[$method] = $middleware;
     }
 
     /**
      * Match path
      *
-     * @param array $segments
-     * @param array $arguments
-     * @param array $middleware
-     * @return Router|null
+     * @param list<string> $segments
+     * @param array<string, string>|list<string> $arguments
+     * @param array<callable|string> $middleware
      */
-    private function matchPath(array $segments, &$arguments = [], &$middleware = [])
+    private function matchPath(array $segments, array &$arguments = [], array &$middleware = []): ?self
     {
         if (!$segments) {
             if ($this->variadic) {
@@ -278,11 +241,8 @@ class Router
     }
 
     /**
-     * Match method
-     *
-     * @param string $method
-     * @param array  $middleware
-     * @return callable|null
+     * @param array<callable|string> $middleware
+     * @return callable|null|string
      */
     private function matchMethod(string $method, array &$middleware)
     {
@@ -301,15 +261,11 @@ class Router
     /**
      * Route a request and return the handler
      *
-     * @param string $method
-     * @param string $path
-     * @param array  $arguments
-     * @param array  $middleware
-     * @return callable
+     * @return callable|string
      */
-    public function match(string $method, string $path, array &$arguments = null, array &$middleware = null)
+    public function match(string $method, string $path, ?array &$arguments = null, ?array &$middleware = null)
     {
-        $arguments  = [];
+        $arguments = [];
         $middleware = $this->middleware;
 
         $map = $this->matchPath($this->split($path), $arguments, $middleware);

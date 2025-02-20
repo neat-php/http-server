@@ -8,20 +8,13 @@ use RuntimeException;
 
 class Input
 {
-    /** @var Request */
-    protected $request;
-
-    /** @var Session */
-    protected $session;
-
-    /** @var array */
-    protected $data = [];
-
-    /** @var array */
-    protected $filters = [];
-
+    protected Request $request;
+    protected Session $session;
+    protected array $data = [];
+    /** @var array<string, callable> */
+    protected array $filters = [];
     /** @var string[] */
-    protected $errors = [];
+    protected array $errors = [];
 
     public function __construct(Request $request, Session $session)
     {
@@ -34,9 +27,7 @@ class Input
     /**
      * Initialize the input
      */
-    public function init()
-    {
-    }
+    public function init() {}
 
     public function request(): Request
     {
@@ -56,10 +47,8 @@ class Input
      * Load input from the requested sources and the session
      *
      * Flushes all previously applied filters and validations
-     *
-     * @param array $sources
      */
-    public function load(...$sources)
+    public function load(string ...$sources): void
     {
         if (!$sources) {
             throw new RuntimeException('Input sources must not be empty');
@@ -85,24 +74,22 @@ class Input
     /**
      * Store input to the session so the user can resume at the referring URL
      */
-    public function store()
+    public function store(): void
     {
         $this->session->set(
             'input',
             [
                 'data'   => $this->data,
                 'errors' => $this->errors,
-            ]
+            ],
         );
     }
 
     /**
      * Set variable default
-     *
-     * @param string $var
-     * @param mixed  $value
+     * @param mixed $value
      */
-    public function default(string $var, $value)
+    public function default(string $var, $value): void
     {
         if (!isset($this->data[$var])) {
             $this->data[$var] = $value;
@@ -119,9 +106,6 @@ class Input
 
     /**
      * Has variable?
-     *
-     * @param string $var
-     * @return bool
      */
     public function has(string $var): bool
     {
@@ -130,8 +114,6 @@ class Input
 
     /**
      * Get variable
-     *
-     * @param string $var
      * @return mixed
      */
     public function get(string $var)
@@ -141,32 +123,24 @@ class Input
 
     /**
      * Set variable
-     *
-     * @param string $var
-     * @param mixed  $value
+     * @param mixed $value
      */
-    public function set(string $var, $value)
+    public function set(string $var, $value): void
     {
         $this->data[$var] = $value;
     }
 
     /**
      * Register custom input filter
-     *
-     * @param string   $name
-     * @param callable $filter
      */
-    public function register(string $name, callable $filter)
+    public function register(string $name, callable $filter): void
     {
         $this->filters[$name] = $filter;
     }
 
     /**
      * Filter an input variable
-     *
-     * @param string            $var
      * @param null|string|array $filters
-     * @param string|null       $type
      * @return mixed|null
      * @throws InvalidArgumentException
      */
@@ -195,7 +169,6 @@ class Input
 
     /**
      * @param null|string|array<string>|array<string, string> $filters
-     * @return array
      * @throws InvalidArgumentException
      */
     private function normalizeFilters($filters): array
@@ -207,7 +180,7 @@ class Input
             $method = __METHOD__;
             $type   = gettype($filters);
             throw new InvalidArgumentException(
-                "$method expects null, string or array as first argument '$type' given"
+                "$method expects null, string or array as first argument '$type' given",
             );
         }
         if (is_string($filters)) {
@@ -216,7 +189,7 @@ class Input
         $normalized = [];
         foreach ($filters as $key => $filter) {
             if (is_string($key)) {
-                $normalized[$key] = (array) $filter;
+                $normalized[$key] = (array)$filter;
                 continue;
             }
             $params              = explode(':', $filter);
@@ -255,10 +228,7 @@ class Input
 
     /**
      * Get boolean input
-     *
-     * @param string       $var
      * @param string|array $filters
-     * @return bool|null
      */
     public function bool(string $var, $filters = null): ?bool
     {
@@ -267,10 +237,7 @@ class Input
 
     /**
      * Get floating point input
-     *
-     * @param string       $var
      * @param string|array $filters
-     * @return float|null
      */
     public function float(string $var, $filters = null): ?float
     {
@@ -279,10 +246,7 @@ class Input
 
     /**
      * Get integer input
-     *
-     * @param string       $var
      * @param string|array $filters
-     * @return int|null
      */
     public function int(string $var, $filters = null): ?int
     {
@@ -291,10 +255,7 @@ class Input
 
     /**
      * Get string input
-     *
-     * @param string       $var
      * @param string|array $filters
-     * @return string|null
      */
     public function string(string $var, $filters = null): ?string
     {
@@ -303,10 +264,7 @@ class Input
 
     /**
      * Get file input
-     *
-     * @param string       $var
      * @param string|array $filters
-     * @return Upload|null
      */
     public function file(string $var, $filters = null): ?Upload
     {
@@ -329,9 +287,6 @@ class Input
 
     /**
      * Get error for a given field
-     *
-     * @param string $field
-     * @return string|null
      */
     public function error(string $field): ?string
     {
@@ -340,11 +295,8 @@ class Input
 
     /**
      * Is valid?
-     *
-     * @param string|null $field (optional)
-     * @return bool
      */
-    public function valid(string $field = null): bool
+    public function valid(?string $field = null): bool
     {
         if ($field) {
             return !isset($this->errors[$field]);

@@ -10,23 +10,13 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class PsrWrapper implements RequestHandlerInterface
 {
-    /** @var Handler */
-    private $handler;
+    private Handler $handler;
 
-    /**
-     * PSR Wrapper constructor
-     *
-     * @param $handler
-     */
     public function __construct(Handler $handler)
     {
         $this->handler = $handler;
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     * @return ResponseInterface
-     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return $this->handler->handle(new Request($request))->psr();

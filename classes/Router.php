@@ -4,6 +4,7 @@ namespace Neat\Http\Server;
 
 use Neat\Http\Exception\MethodNotAllowedException;
 use Neat\Http\Exception\RouteNotFoundException;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * Router
@@ -21,9 +22,9 @@ class Router
     private ?string $variadic = null;
     /** @var array<callable|string> */
     private array $methodHandler = [];
-    /** @var array<callable|string> */
+    /** @var array<callable|Middleware|MiddlewareInterface|string> */
     private array $methodMiddleware = [];
-    /** @var array<callable|string> */
+    /** @var array<callable|Middleware|MiddlewareInterface|string> */
     private array $middleware = [];
 
     public function __construct(?string $segment = null)
@@ -50,7 +51,7 @@ class Router
      * Add GET route
      *
      * @param callable|string $handler
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      */
     public function get(string $url, $handler, ...$middleware): void
     {
@@ -61,7 +62,7 @@ class Router
      * Add POST route
      *
      * @param callable|string $handler
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      */
     public function post(string $url, $handler, ...$middleware): void
     {
@@ -72,7 +73,7 @@ class Router
      * Add PUT route
      *
      * @param callable|string $handler
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      */
     public function put(string $url, $handler, ...$middleware): void
     {
@@ -83,7 +84,7 @@ class Router
      * Add PATCH route
      *
      * @param callable|string $handler
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      */
     public function patch(string $url, $handler, ...$middleware): void
     {
@@ -94,7 +95,7 @@ class Router
      * Add DELETE route
      *
      * @param callable|string $handler
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      */
     public function delete(string $url, $handler, ...$middleware): void
     {
@@ -105,7 +106,7 @@ class Router
      * Add a controller route
      *
      * @param callable|string $handler
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      */
     public function any(string $url, $handler, ...$middleware): void
     {
@@ -116,7 +117,7 @@ class Router
      * Get a sub-router
      *
      * @param string $url
-     * @param callable|string $middleware
+     * @param callable|Middleware|MiddlewareInterface|string $middleware
      * @return Router
      */
     public function in(string $url, ...$middleware): Router
@@ -177,7 +178,7 @@ class Router
      * Set method handler and middleware
      *
      * @param callable|string $handler
-     * @param array<callable|string> $middleware
+     * @param array<callable|Middleware|MiddlewareInterface|string> $middleware
      */
     private function method(string $method, $handler, array $middleware): void
     {
@@ -190,7 +191,7 @@ class Router
      *
      * @param list<string> $segments
      * @param array<string, string>|list<string> $arguments
-     * @param array<callable|string> $middleware
+     * @param array<callable|Middleware|MiddlewareInterface|string> $middleware
      */
     private function matchPath(array $segments, array &$arguments = [], array &$middleware = []): ?self
     {
@@ -241,7 +242,7 @@ class Router
     }
 
     /**
-     * @param array<callable|string> $middleware
+     * @param array<callable|Middleware|MiddlewareInterface|string> $middleware
      * @return callable|null|string
      */
     private function matchMethod(string $method, array &$middleware)

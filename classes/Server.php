@@ -40,7 +40,7 @@ class Server
     {
         $keys = array_keys($files);
         sort($keys);
-        $multi = $keys !== ['error', 'name', 'size', 'tmp_name', 'type'];
+        $multi = count(array_intersect(['error', 'name', 'size', 'tmp_name', 'type'], $keys)) !== 5;
         if (!$multi && is_array($files['name'])) {
             $multi = true;
             $files = array_map(function ($index) use ($files) {

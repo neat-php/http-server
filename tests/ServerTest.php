@@ -129,6 +129,38 @@ class ServerTest extends TestCase
         $this->assertEquals($expected, $server->receiveUploadedFiles($files));
     }
 
+    public function testReceivePHP81FileArray()
+    {
+        $server = new Server(
+            $this->createMock(ServerRequestFactoryInterface::class),
+            $streamFactory = $this->createMock(StreamFactoryInterface::class),
+            $uploadedFileFactory = $this->createMock(UploadedFileFactoryInterface::class)
+        );
+
+        $stream = $this->createMock(StreamInterface::class);
+        $avatar = $this->createMock(UploadedFileInterface::class);
+
+        $streamFactory->expects($this->once())->method('createStreamFromFile')->with(__DIR__ . '/test.txt')->willReturn($stream);
+        $uploadedFileFactory->expects($this->once())->method('createUploadedFile')->with($stream, 90996, 0, 'my-avatar.png', 'image/png')->willReturn($avatar);
+
+        $this->assertEquals(['my-form' => ['details' => ['avatar' => $avatar]]], $server->receiveUploadedFiles(
+            [
+                'my-form' => [
+                    'details' => [
+                        'avatar' => [
+                            'tmp_name'  => __DIR__ . '/test.txt',
+                            'name'      => 'my-avatar.png',
+                            'size'      => 90996,
+                            'type'      => 'image/png',
+                            'error'     => 0,
+                            'full_path' => 'my-avatar.png',
+                        ],
+                    ],
+                ],
+            ]
+        ));
+    }
+
     /**
      * Test receiving multiple uploaded files from a non-normalized files array
      */

@@ -136,7 +136,7 @@ class Router
      */
     private function split(string $path): array
     {
-        return array_filter(explode('/', $path));
+        return array_filter(explode('/', $path), fn($a) => $a !== '');
     }
 
     /**
@@ -147,7 +147,7 @@ class Router
      */
     private function map(array $segments): Router
     {
-        if (!$segment = array_shift($segments)) {
+        if (is_null($segment = array_shift($segments))) {
             return $this;
         }
         if (strpos($segment, '...$') === 0) {

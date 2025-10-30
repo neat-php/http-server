@@ -30,6 +30,8 @@ class RouterTest extends TestCase
         $router->delete('/test/test', 'delete-test-test');
         $router->get('/arg/*', 'test-arg');
         $router->any('/any', 'any-test');
+        $router->get('/falsy-test/0/test', 'falsy-test');
+        $router->get('/falsy-test2/$id:\d+/test', 'falsy-test2');
 
         return $router;
     }
@@ -54,6 +56,8 @@ class RouterTest extends TestCase
         $this->assertSame(['bla', '5', 'and', 'more'], $parameters);
         $this->assertSame('any-test', $router->match('GET', '/any'));
         $this->assertSame('any-test', $router->match('POST', '/any'));
+        $this->assertSame('falsy-test', $router->match('GET', '/falsy-test/0/test'));
+        $this->assertSame('falsy-test2', $router->match('GET', '/falsy-test2/0/test'));
     }
 
     public function testAnyVersusGet()
